@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { authClient } from "../lib/auth-client";
+import { useEffect, useRef, useState } from "react";
+import { apiUrl, authClient } from "../lib/auth-client";
 import { PasskeyButton } from "./PasskeyButton";
 
 type SignInProps = {
@@ -7,6 +7,16 @@ type SignInProps = {
 };
 
 type Mode = "signin" | "signup";
+
+type TelegramWidgetUser = {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  auth_date: number;
+  hash: string;
+};
 
 export function SignIn({ onAuthed }: SignInProps) {
   const [mode, setMode] = useState<Mode>("signin");
@@ -17,12 +27,69 @@ export function SignIn({ onAuthed }: SignInProps) {
   const [password, setPassword] = useState("");
   const [totp, setTotp] = useState("");
   const [needsTwoFactor, setNeedsTwoFactor] = useState(false);
+  const [botUsername, setBotUsername] = useState<string | null>(null);
+  const telegramRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const onRedirect = () => setNeedsTwoFactor(true);
     window.addEventListener("relay:two-factor", onRedirect);
     return () => window.removeEventListener("relay:two-factor", onRedirect);
   }, []);
+
+  useEffect(() => {
+    void fetch(`${apiUrl}/telegram/widget/config`)
+      .then(async (response) => {
+        if (!response.ok) return;
+        const data = (await response.json()) as { botUsername: string | null; enabled: boolean };
+        if (data.enabled && data.botUsername) {
+          setBotUsername(data.botUsername);
+        }
+      })
+      .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    if (!botUsername || needsTwoFactor) return;
+    const container = telegramRef.current;
+    if (!container) return;
+
+    const callbackName = "__relayTelegramSignIn";
+    (window as unknown as Record<string, unknown>)[callbackName] = async (
+      telegramUser: TelegramWidgetUser,
+    ) => {
+      setBusy(true);
+      setError(null);
+      const response = await fetch(`${apiUrl}/telegram/widget/signin`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(telegramUser),
+      });
+      setBusy(false);
+      if (!response.ok) {
+        const body = (await response.json().catch(() => ({}))) as { error?: string };
+        setError(body.error ?? "Telegram sign-in failed");
+        return;
+      }
+      onAuthed();
+    };
+
+    container.innerHTML = "";
+    const script = document.createElement("script");
+    script.src = "https://telegram.org/js/telegram-widget.js?22";
+    script.async = true;
+    script.setAttribute("data-telegram-login", botUsername);
+    script.setAttribute("data-size", "large");
+    script.setAttribute("data-radius", "14");
+    script.setAttribute("data-request-access", "write");
+    script.setAttribute("data-onauth", `${callbackName}(user)`);
+    container.appendChild(script);
+
+    return () => {
+      delete (window as unknown as Record<string, unknown>)[callbackName];
+      container.innerHTML = "";
+    };
+  }, [botUsername, needsTwoFactor, onAuthed]);
 
   useEffect(() => {
     if (
@@ -243,6 +310,7 @@ export function SignIn({ onAuthed }: SignInProps) {
                 onClick={() => void signInPasskey()}
                 busy={busy}
               />
+              {botUsername ? <div ref={telegramRef} className="telegram-widget" /> : null}
             </>
           )}
           {error ? <p className="banner">{error}</p> : null}

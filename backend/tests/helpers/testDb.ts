@@ -51,6 +51,34 @@ export async function prepareTestSchema(pool: Pool): Promise<void> {
       ADD COLUMN IF NOT EXISTS display_username text;
   `);
   await pool.query(`
+    ALTER TABLE ${TEST_SCHEMA}."user"
+      ADD COLUMN IF NOT EXISTS custom_status text;
+  `);
+  await pool.query(`
+    ALTER TABLE ${TEST_SCHEMA}."user"
+      ADD COLUMN IF NOT EXISTS description text;
+  `);
+  await pool.query(`
+    ALTER TABLE ${TEST_SCHEMA}."user"
+      ADD COLUMN IF NOT EXISTS last_active_at timestamp;
+  `);
+  await pool.query(`
+    ALTER TABLE ${TEST_SCHEMA}."user"
+      ADD COLUMN IF NOT EXISTS show_last_active boolean NOT NULL DEFAULT true;
+  `);
+  await pool.query(`
+    ALTER TABLE ${TEST_SCHEMA}."user"
+      ADD COLUMN IF NOT EXISTS show_device_info boolean NOT NULL DEFAULT true;
+  `);
+  await pool.query(`
+    ALTER TABLE ${TEST_SCHEMA}."user"
+      ADD COLUMN IF NOT EXISTS telegram_id text;
+  `);
+  await pool.query(`
+    ALTER TABLE ${TEST_SCHEMA}."user"
+      ADD COLUMN IF NOT EXISTS telegram_username text;
+  `);
+  await pool.query(`
     CREATE UNIQUE INDEX IF NOT EXISTS user_username_unique
       ON ${TEST_SCHEMA}."user" (username);
   `);

@@ -5,29 +5,34 @@ Relay is a split deploy: a static Vite client on Vercel and an always-on Express
 ```
 Browser (Vercel)
   ├─ better-auth client ── cookies ──► Express /api/auth/*
-  ├─ REST (conversations, telegram) ─► Express
+  ├─ REST (chat, profile, telegram) ─► Express
   └─ Socket.IO client ───────────────► Socket.IO on the same HTTP server
 
 Render process
   ├─ Express app (createApp, no listen in tests)
-  ├─ Socket.IO rooms: conversation:<id>, user:<id>
-  ├─ Telegraf long polling (OTP + account linking)
+  ├─ Socket.IO rooms + presence broadcasts
+  ├─ Telegraf long polling (OTP linking)
+  ├─ Telegram Login Widget HMAC auth
   └─ Drizzle + pg Pool ──► PostgreSQL
 ```
 
 ## Auth
 
-`backend/src/auth.ts` configures better-auth with the Drizzle adapter, email/password + username plugin, Google and GitHub OAuth, account linking, the passkey plugin, and the twoFactor plugin (`allowPasswordless: true` so OAuth users can enroll TOTP). Session cookies are cross-site in production. After signup, users link additional methods from the Security panel (`linkSocial`, passkey registration, TOTP, Telegram).
+`backend/src/auth.ts` configures better-auth with email/password + username, Google/GitHub, account linking, passkeys, TOTP 2FA, and account deletion. Native Telegram Login Widget auth is implemented under `/telegram/widget/*` with HMAC verification. Profile, privacy, and presence fields live on `user` and are exposed via `/me/profile` and `/users/:id/profile`. Session cookies are cross-site in production.
+
+The frontend uses routed settings pages (`/settings/*`) and a messenger-style shell with theme toggle.
 
 REST and sockets share `resolveSession()` in `requireSession.ts`.
 
 ## Messaging
 
-`POST /conversations/direct` finds or creates a two-person conversation. History is `GET /conversations/:id/messages`. Live traffic uses Socket.IO events from `realtime/events.ts`. Membership is checked before join and send.
+`POST /conversations/direct` finds or creates a two-person conversation. History is `GET /conversations/:id/messages`. Live traffic uses Socket.IO events from `realtime/events.ts`. Membership is checked before join and send. Presence updates (`presence:update`) track online/offline and `lastActiveAt`.
 
 ## Telegram
 
-`POST /telegram/link` issues a one-time token. The bot `/start <token>` writes `telegramChatId`. `POST /telegram/send` stores a bcrypt hash and asks Telegraf to deliver the plaintext code. `POST /telegram/verify` consumes a valid unused hash.
+OTP linking: `POST /telegram/link` issues a token; bot `/start` stores `telegramChatId`; send/verify handle hashed codes.
+
+Native auth: Telegram Login Widget posts to `/telegram/widget/signin` or `/telegram/widget/link`.
 
 ## Tests
 

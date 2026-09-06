@@ -20,6 +20,13 @@ export const user = pgTable("user", {
   twoFactorEnabled: boolean("two_factor_enabled").default(false),
   username: text("username").unique(),
   displayUsername: text("display_username"),
+  customStatus: text("custom_status"),
+  description: text("description"),
+  lastActiveAt: timestamp("last_active_at"),
+  showLastActive: boolean("show_last_active").notNull().default(true),
+  showDeviceInfo: boolean("show_device_info").notNull().default(true),
+  telegramId: text("telegram_id").unique(),
+  telegramUsername: text("telegram_username"),
 });
 
 export const session = pgTable(

@@ -25,6 +25,50 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 8,
   },
+  user: {
+    additionalFields: {
+      customStatus: {
+        type: "string",
+        required: false,
+        input: true,
+      },
+      description: {
+        type: "string",
+        required: false,
+        input: true,
+      },
+      lastActiveAt: {
+        type: "date",
+        required: false,
+        input: false,
+      },
+      showLastActive: {
+        type: "boolean",
+        required: false,
+        defaultValue: true,
+        input: true,
+      },
+      showDeviceInfo: {
+        type: "boolean",
+        required: false,
+        defaultValue: true,
+        input: true,
+      },
+      telegramId: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+      telegramUsername: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+    },
+    deleteUser: {
+      enabled: true,
+    },
+  },
   account: {
     accountLinking: {
       enabled: true,

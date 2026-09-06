@@ -36,9 +36,9 @@ Production cookies use `sameSite: "none"` and `secure: true` so the Vercel origi
 
 ## Telegram OTP
 
-1. Sign up with username/password (or Google/GitHub), open **Security**, then link passkey, 2FA, OAuth, or Telegram.
+1. Sign up with username/password (or Google/GitHub/Telegram), open **Settings**, then manage passkeys, 2FA, sessions, privacy, and linked accounts.
 2. Telegram opens `https://t.me/<bot>?start=<token>` and the bot stores your chat id.
-3. Send / verify a hashed 6-digit OTP. No SMS vendor is used.
+3. Send / verify a hashed 6-digit OTP. Native Telegram Login Widget is also supported when bot env vars are set.
 
 ## Deploy
 

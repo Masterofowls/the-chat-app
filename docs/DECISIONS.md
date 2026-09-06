@@ -1,5 +1,9 @@
 # Decisions
 
+## 2026-09-06 — Messenger settings + profile platform
+
+Settings are separate routes (passkeys, accounts, 2FA, sessions, privacy, password, Telegram, danger). Profile stores status/bio/privacy/last-active; avatars are client-cropped JPEG data URLs. Native Telegram auth uses the Login Widget with HMAC verification rather than the incompatible better-auth-telegram peer range.
+
 ## 2026-09-06 — Username/password as primary account, then link providers
 
 Users create a Relay account with username + password (email required by better-auth). Passkey, TOTP, Google, GitHub, and Telegram are linked afterward from Security. Account linking allows different OAuth emails so social providers can attach to an existing username account.

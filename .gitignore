@@ -51,3 +51,12 @@ Thumbs.db
 
 # generated
 *.pem
+/.cursor
+/.cursor/hooks/state/continual-learning.json
+/docs/ACTIVITY_LOG.md
+/docs/DECISIONS.md
+/backend/.env
+/frontend/node_modules
+/scripts/check-vercel-frontend.mjs
+/scripts/git-rollback.ps1
+/scripts/git-rollback.sh

@@ -5,7 +5,9 @@ import { auth } from "./auth.js";
 import { allowedOrigins } from "./config.js";
 import { resolveSession } from "./middleware/requireSession.js";
 import { conversationsRouter } from "./routes/conversations.js";
+import { profileRouter } from "./routes/profile.js";
 import { telegramOtpRouter } from "./routes/telegram-otp.js";
+import { telegramWidgetRouter } from "./routes/telegram-widget.js";
 
 export function createApp() {
   const app = express();
@@ -19,7 +21,7 @@ export function createApp() {
   );
 
   app.all("/api/auth/{*splat}", toNodeHandler(auth));
-  app.use(express.json({ limit: "1mb" }));
+  app.use(express.json({ limit: "2mb" }));
 
   app.get("/health", (_req, res) => {
     res.json({ ok: true, service: "messaging-app-api" });
@@ -38,7 +40,9 @@ export function createApp() {
     }
   });
 
+  app.use(profileRouter);
   app.use("/telegram", telegramOtpRouter);
+  app.use("/telegram", telegramWidgetRouter);
   app.use("/conversations", conversationsRouter);
 
   app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

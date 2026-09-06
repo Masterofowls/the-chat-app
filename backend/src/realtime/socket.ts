@@ -10,8 +10,9 @@ import type {
 } from "../../../shared/types.js";
 import { allowedOrigins } from "../config.js";
 import { db } from "../db/index.js";
-import { conversations, messages, participants } from "../db/schema.js";
+import { conversations, messages, participants, user } from "../db/schema.js";
 import { resolveSession } from "../middleware/requireSession.js";
+import { isUserOnline, markOffline, markOnline } from "../presence.js";
 import { conversationRoom, SOCKET_EVENTS, userRoom } from "./events.js";
 
 export type AppSocketServer = Server<
@@ -25,6 +26,20 @@ let io: AppSocketServer | null = null;
 
 export function getIo(): AppSocketServer | null {
   return io;
+}
+
+async function touchPresence(userId: string, online: boolean) {
+  const now = new Date();
+  await db
+    .update(user)
+    .set({ lastActiveAt: now, updatedAt: now })
+    .where(eq(user.id, userId));
+
+  io?.emit(SOCKET_EVENTS.PRESENCE_UPDATE, {
+    userId,
+    isOnline: online,
+    lastActiveAt: now.toISOString(),
+  });
 }
 
 export function initSocket(httpServer: HttpServer): AppSocketServer {
@@ -57,6 +72,19 @@ export function initSocket(httpServer: HttpServer): AppSocketServer {
   io.on("connection", (socket) => {
     const currentUser = socket.data.user;
     void socket.join(userRoom(currentUser.id));
+    markOnline(currentUser.id);
+    void touchPresence(currentUser.id, true);
+
+    socket.on("disconnect", () => {
+      const wentOffline = markOffline(currentUser.id);
+      if (wentOffline) {
+        void touchPresence(currentUser.id, false);
+      }
+    });
+
+    socket.on(SOCKET_EVENTS.PRESENCE_PING, () => {
+      void touchPresence(currentUser.id, isUserOnline(currentUser.id));
+    });
 
     socket.on(SOCKET_EVENTS.JOIN_CONVERSATION, async ({ conversationId }) => {
       const member = await isMember(conversationId, currentUser.id);
@@ -169,4 +197,3 @@ async function isMember(conversationId: string, userId: string): Promise<boolean
 
   return Boolean(row);
 }
-

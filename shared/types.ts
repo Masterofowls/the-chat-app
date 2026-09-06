@@ -3,6 +3,11 @@ export type UserSummary = {
   name: string;
   email: string;
   image: string | null;
+  username?: string | null;
+  customStatus?: string | null;
+  isOnline?: boolean;
+  lastActiveAt?: string | null;
+  deviceInfo?: string | null;
 };
 
 export type Conversation = {
@@ -29,6 +34,12 @@ export type TypingPayload = {
   userName: string;
 };
 
+export type PresencePayload = {
+  userId: string;
+  isOnline: boolean;
+  lastActiveAt: string | null;
+};
+
 export type SocketErrorPayload = {
   code: string;
   message: string;
@@ -40,12 +51,14 @@ export type ClientToServerEvents = {
   "message:send": (payload: { conversationId: string; body: string }) => void;
   "typing:start": (payload: { conversationId: string }) => void;
   "typing:stop": (payload: { conversationId: string }) => void;
+  "presence:ping": () => void;
 };
 
 export type ServerToClientEvents = {
   "message:new": (payload: Message) => void;
   "typing:start": (payload: TypingPayload) => void;
   "typing:stop": (payload: TypingPayload) => void;
+  "presence:update": (payload: PresencePayload) => void;
   error: (payload: SocketErrorPayload) => void;
 };
 
@@ -53,4 +66,14 @@ export type InterServerEvents = Record<string, never>;
 
 export type SocketData = {
   user: UserSummary;
+};
+
+export type UserProfile = UserSummary & {
+  customStatus: string | null;
+  description: string | null;
+  lastActiveAt: string | null;
+  isOnline: boolean;
+  deviceInfo: string | null;
+  showLastActive: boolean;
+  showDeviceInfo: boolean;
 };

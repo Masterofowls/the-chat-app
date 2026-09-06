@@ -5,7 +5,9 @@ import { z } from "zod";
 import type { Conversation, Message, UserSummary } from "../../../shared/types.js";
 import { db } from "../db/index.js";
 import { conversations, messages, participants, user } from "../db/schema.js";
+import { toPublicUserSummary } from "../lib/user-summary.js";
 import { asAuthed, requireSession } from "../middleware/requireSession.js";
+import { isUserOnline } from "../presence.js";
 
 export const conversationsRouter = Router();
 
@@ -42,6 +44,11 @@ conversationsRouter.get("/users", async (req, res, next) => {
         name: user.name,
         email: user.email,
         image: user.image,
+        username: user.username,
+        customStatus: user.customStatus,
+        lastActiveAt: user.lastActiveAt,
+        showLastActive: user.showLastActive,
+        showDeviceInfo: user.showDeviceInfo,
       })
       .from(user)
       .where(
@@ -51,13 +58,25 @@ conversationsRouter.get("/users", async (req, res, next) => {
               or(
                 sql`lower(${user.email}) like ${`%${query}%`}`,
                 sql`lower(${user.name}) like ${`%${query}%`}`,
+                sql`lower(coalesce(${user.username}, '')) like ${`%${query}%`}`,
               ),
             )
           : ne(user.id, authed.user.id),
       )
       .limit(20);
 
-    res.json({ users: rows satisfies UserSummary[] });
+    res.json({
+      users: rows.map((row) => ({
+        id: row.id,
+        name: row.name,
+        email: "",
+        image: row.image,
+        username: row.username,
+        customStatus: row.customStatus,
+        isOnline: undefined,
+        lastActiveAt: row.showLastActive ? row.lastActiveAt?.toISOString() ?? null : null,
+      })) satisfies UserSummary[],
+    });
   } catch (error) {
     next(error);
   }
@@ -244,10 +263,20 @@ async function loadConversation(conversationId: string): Promise<Conversation | 
       name: user.name,
       email: user.email,
       image: user.image,
+      username: user.username,
+      customStatus: user.customStatus,
+      lastActiveAt: user.lastActiveAt,
+      showLastActive: user.showLastActive,
+      showDeviceInfo: user.showDeviceInfo,
     })
     .from(participants)
     .innerJoin(user, eq(participants.userId, user.id))
     .where(eq(participants.conversationId, conversationId));
+
+  const participantsSummary = memberRows.map((row) => ({
+    ...toPublicUserSummary(row),
+    isOnline: isUserOnline(row.id),
+  }));
 
   const [last] = await db
     .select({
@@ -271,7 +300,7 @@ async function loadConversation(conversationId: string): Promise<Conversation | 
     id: conversation.id,
     createdAt: conversation.createdAt.toISOString(),
     updatedAt: conversation.updatedAt.toISOString(),
-    participants: memberRows,
+    participants: participantsSummary,
     lastMessage: last
       ? {
           id: last.id,

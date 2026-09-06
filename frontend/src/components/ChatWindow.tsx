@@ -1,14 +1,27 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { Conversation, UserSummary } from "../../../shared/types";
 import { useChat } from "../hooks/useChat";
+import { Avatar } from "./ui/Avatar";
+import { UserPresence } from "./ui/UserPresence";
 import styles from "./ChatWindow.module.css";
 
 type ChatWindowProps = {
   conversation: Conversation | null;
   currentUser: UserSummary;
+  peerPresence?: {
+    isOnline?: boolean | null;
+    lastActiveAt?: string | null;
+    deviceInfo?: string | null;
+  };
+  onOpenProfile?: () => void;
 };
 
-export function ChatWindow({ conversation, currentUser }: ChatWindowProps) {
+export function ChatWindow({
+  conversation,
+  currentUser,
+  peerPresence,
+  onOpenProfile,
+}: ChatWindowProps) {
   const { messages, typingLabel, connected, loading, error, sendMessage, startTyping, stopTyping } =
     useChat({ conversationId: conversation?.id ?? null });
   const [draft, setDraft] = useState("");
@@ -19,16 +32,8 @@ export function ChatWindow({ conversation, currentUser }: ChatWindowProps) {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
-  if (!conversation) {
-    return (
-      <section className="empty-chat" style={{ placeItems: "center", minHeight: "100vh" }}>
-        <div>
-          <p className="kicker">Inbox</p>
-          <h2 className="hero-title">Choose someone to message</h2>
-          <p className="muted">Direct conversations stay in one room. Typing and delivery are live.</p>
-        </div>
-      </section>
-    );
+  if (!conversation || !peer) {
+    return null;
   }
 
   function onSubmit(event: FormEvent) {
@@ -39,14 +44,25 @@ export function ChatWindow({ conversation, currentUser }: ChatWindowProps) {
   }
 
   return (
-    <section className={styles.window} aria-label={`Conversation with ${peer?.name ?? "peer"}`}>
+    <section className={styles.window} aria-label={`Conversation with ${peer.name}`}>
       <header className="chat-top">
-        <div>
-          <p className="kicker">Direct</p>
-          <h2 className="serif" style={{ margin: 0 }}>
-            {peer?.name ?? "Conversation"}
-          </h2>
-        </div>
+        <button type="button" className="chat-peer" onClick={onOpenProfile}>
+          <Avatar
+            name={peer.name}
+            image={peer.image}
+            online={peerPresence?.isOnline ?? peer.isOnline}
+            size="md"
+          />
+          <span>
+            <strong className="serif">{peer.name}</strong>
+            <UserPresence
+              compact
+              isOnline={peerPresence?.isOnline ?? peer.isOnline}
+              lastActiveAt={peerPresence?.lastActiveAt ?? peer.lastActiveAt}
+              deviceInfo={peerPresence?.deviceInfo ?? peer.deviceInfo}
+            />
+          </span>
+        </button>
         <div className="row">
           <span className="status-dot" data-on={String(connected)} aria-hidden="true" />
           <span className="muted">{connected ? "Live" : "Reconnecting"}</span>
@@ -78,18 +94,14 @@ export function ChatWindow({ conversation, currentUser }: ChatWindowProps) {
         <textarea
           id="message-input"
           className={`field ${styles.input}`}
-          rows={1}
           value={draft}
           onChange={(event) => {
             setDraft(event.target.value);
-            if (event.target.value) {
-              startTyping();
-            } else {
-              stopTyping();
-            }
+            startTyping();
           }}
-          onBlur={stopTyping}
-          placeholder={`Message ${peer?.name ?? "them"}`}
+          onBlur={() => stopTyping()}
+          rows={1}
+          placeholder="Message"
         />
         <button className="primary-btn" type="submit">
           Send

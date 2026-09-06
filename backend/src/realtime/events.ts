@@ -5,6 +5,8 @@ export const SOCKET_EVENTS = {
   MESSAGE_NEW: "message:new",
   TYPING_START: "typing:start",
   TYPING_STOP: "typing:stop",
+  PRESENCE_PING: "presence:ping",
+  PRESENCE_UPDATE: "presence:update",
   ERROR: "error",
 } as const;
 

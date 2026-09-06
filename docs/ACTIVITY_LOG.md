@@ -1,5 +1,16 @@
 # Activity log
 
+## 2026-09-06 22:55 UTC+3
+
+- Expanded Relay into a messenger-style shell with theme toggle, routed settings pages, and full profile.
+- Added passkey list/remove, 2FA disable, sessions revoke, password change, account delete, privacy toggles.
+- Added presence/last-active/device fields, JPEG avatar crop upload, share/QR profile, native Telegram Login Widget auth.
+
+## 2026-09-06 22:25 UTC+3
+
+- Pushed `feat: username/password auth with provider linking` (`a138380`) and redeployed.
+- Render API deploy `dep-daerse0n74is73f7s1j0` succeeded; Vercel production aliased to `messaging-app-frontend-five.vercel.app`.
+
 ## 2026-09-06 22:06 UTC+3
 
 - Enabled username/password signup + username sign-in (better-auth `emailAndPassword` + `username` plugin).
