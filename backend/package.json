@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env src/index.ts",
     "build": "tsc -p tsconfig.build.json",
-    "start": "node dist/backend/src/index.js",
+    "start": "tsx src/index.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src tests --ext .ts",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
@@ -16,6 +16,11 @@
   },
   "dependencies": {
     "@better-auth/passkey": "^1.4.18",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.2.3",
+    "@types/pg": "^8.16.0",
     "bcryptjs": "^3.0.3",
     "better-auth": "^1.4.18",
     "cors": "^2.8.6",
@@ -24,16 +29,13 @@
     "pg": "^8.18.0",
     "socket.io": "^4.8.3",
     "telegraf": "^4.16.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
-    "@types/bcryptjs": "^2.4.6",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.2.3",
-    "@types/pg": "^8.16.0",
     "@types/supertest": "^6.0.3",
     "drizzle-kit": "^0.31.8",
     "eslint": "^9.39.2",
@@ -41,8 +43,6 @@
     "socket.io-client": "^4.8.3",
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.6",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
     "typescript-eslint": "^8.54.0"
   },
   "allowScripts": {

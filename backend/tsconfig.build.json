@@ -5,7 +5,9 @@
     "outDir": "dist",
     "rootDir": "..",
     "declaration": false,
-    "sourceMap": true
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "types": ["node"]
   },
   "include": ["src/**/*.ts", "../shared/types.ts"]
 }
