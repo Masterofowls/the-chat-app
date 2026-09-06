@@ -42,6 +42,18 @@ export async function prepareTestSchema(pool: Pool): Promise<void> {
   await pool.query(`CREATE SCHEMA IF NOT EXISTS ${TEST_SCHEMA}`);
   await pool.query(`SET search_path TO ${TEST_SCHEMA}, public`);
   await pool.query(migrationSql);
+  await pool.query(`
+    ALTER TABLE ${TEST_SCHEMA}."user"
+      ADD COLUMN IF NOT EXISTS username text;
+  `);
+  await pool.query(`
+    ALTER TABLE ${TEST_SCHEMA}."user"
+      ADD COLUMN IF NOT EXISTS display_username text;
+  `);
+  await pool.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS user_username_unique
+      ON ${TEST_SCHEMA}."user" (username);
+  `);
 }
 
 export async function truncateTestSchema(pool: Pool): Promise<void> {

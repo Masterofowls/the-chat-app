@@ -1,5 +1,38 @@
 # Activity log
 
+## 2026-09-06 22:06 UTC+3
+
+- Enabled username/password signup + username sign-in (better-auth `emailAndPassword` + `username` plugin).
+- Added GitHub OAuth, account linking UI, and Security panel ordering for passkey / 2FA / Google / GitHub / Telegram.
+- Pushed `username` / `display_username` columns; auth integration tests cover credential signup/signin.
+
+## 2026-09-06 21:45 UTC+3
+
+- Deployed frontend to Vercel via CLI as `messaging-app-frontend`.
+- Production URL: https://messaging-app-frontend-five.vercel.app (bundle points at Render API).
+- Updated Render `CLIENT_ORIGIN` / `RP_ID` for that Vercel domain and redeployed API (`dep-daeraldg1s2s73dff3f0`).
+
+## 2026-09-06 21:33 UTC+3
+
+- Checked Render `messaging-app-api` (`srv-daeqlngu01pc73fl41i0`): not suspended, Frankfurt starter, health path `/health`.
+- Live probes: `/health` and `/api/auth/ok` 200; `/` 404; `/me` 401 without session.
+
+## 2026-09-06 21:17 UTC+3
+
+- Checked live API `https://messaging-app-api-20qb.onrender.com/`: root `GET /` is Express 404 (`Cannot GET /`).
+- `/health` and `/api/auth/ok` return 200; `/me` and `/conversations` correctly return 401 without a session.
+
+## 2026-09-06 21:08 UTC+3
+
+- Created private GitHub repo `Masterofowls/the-chat-app` and Render web service `messaging-app-api` (Frankfurt, starter).
+- Live URL `https://messaging-app-api-20qb.onrender.com` — `/health` returns 200.
+
+
+## 2026-09-06 21:07 UTC+3
+
+- Created private GitHub repo `Masterofowls/the-chat-app` and Render web service `messaging-app-api` (Frankfurt, starter).
+- First build failed (prod install skipped TypeScript); fixed with `--include=dev` and redeployed successfully.
+
 ## 2026-09-06 20:47 UTC+3
 
 - Wired backend `.env` to the Supabase project (`ktmmjynneroqhftbbllv`) using the IPv4 session pooler in `eu-west-1`.

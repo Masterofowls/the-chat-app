@@ -1,6 +1,6 @@
 # Relay
 
-Realtime 1:1 messaging with Google OAuth, passkeys, Telegram OTP, and TOTP 2FA. The frontend is a Vite React app for Vercel. The backend is an always-on Express + Socket.IO service for Render, with PostgreSQL and a long-polling Telegram bot.
+Realtime 1:1 messaging with username/password accounts, Google and GitHub OAuth, passkeys, Telegram OTP, and TOTP 2FA. The frontend is a Vite React app for Vercel. The backend is an always-on Express + Socket.IO service for Render, with PostgreSQL and a long-polling Telegram bot.
 
 ## Stack
 
@@ -12,7 +12,7 @@ Realtime 1:1 messaging with Google OAuth, passkeys, Telegram OTP, and TOTP 2FA. 
 
 1. Create a PostgreSQL database and copy `backend/.env.example` to `backend/.env`.
 2. Set `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL=http://localhost:9000`, and `CLIENT_ORIGIN=http://localhost:9001`.
-3. Add Google OAuth credentials. For passkeys, keep `RP_ID=localhost`.
+3. Add Google and/or GitHub OAuth credentials when you want those providers. For passkeys, keep `RP_ID=localhost` locally.
 4. Optional: create a Telegram bot and set `TELEGRAM_BOT_TOKEN` plus `BOT_USERNAME`.
 5. Copy `frontend/.env.example` to `frontend/.env` with `VITE_API_URL=http://localhost:9000`.
 6. Apply schema: `cd backend && npm install && npm run db:push` (or run `drizzle/0000_init.sql`).
@@ -36,7 +36,7 @@ Production cookies use `sameSite: "none"` and `secure: true` so the Vercel origi
 
 ## Telegram OTP
 
-1. Sign in, open **Security**, generate a Telegram link.
+1. Sign up with username/password (or Google/GitHub), open **Security**, then link passkey, 2FA, OAuth, or Telegram.
 2. Telegram opens `https://t.me/<bot>?start=<token>` and the bot stores your chat id.
 3. Send / verify a hashed 6-digit OTP. No SMS vendor is used.
 

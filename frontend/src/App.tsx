@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Conversation, UserSummary } from "../../shared/types";
+import { AccountLinks } from "./components/AccountLinks";
 import { ChatWindow } from "./components/ChatWindow";
 import { PasskeyButton } from "./components/PasskeyButton";
 import { SignIn } from "./components/SignIn";
@@ -142,14 +143,18 @@ export function App() {
         </header>
         {settingsOpen ? (
           <div className="settings-grid" style={{ padding: 16, overflow: "auto" }}>
-            <TelegramLink />
-            <TelegramOtpForm />
-            <TwoFactorSetup />
+            <AccountLinks />
             <section className="panel-card">
               <p className="kicker">Passkey</p>
               <h2>Register this device</h2>
-              <PasskeyButton label="Add passkey" onClick={() => void addPasskey()} />
+              <p className="muted">Add a passkey so you can sign in without a password.</p>
+              <div style={{ marginTop: 16 }}>
+                <PasskeyButton label="Add passkey" onClick={() => void addPasskey()} />
+              </div>
             </section>
+            <TwoFactorSetup />
+            <TelegramLink />
+            <TelegramOtpForm />
           </div>
         ) : (
           <>

@@ -110,6 +110,30 @@ h2,
   gap: 12px;
 }
 
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--ink-2);
+}
+
+.auth-tab {
+  border: 0;
+  border-radius: 999px;
+  min-height: 40px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.auth-tab[data-active="true"] {
+  background: rgba(232, 165, 75, 0.18);
+  color: var(--paper);
+  font-weight: 600;
+}
+
 .row {
   display: flex;
   gap: 10px;

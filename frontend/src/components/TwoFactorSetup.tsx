@@ -5,13 +5,16 @@ import { authClient } from "../lib/auth-client";
 export function TwoFactorSetup() {
   const [totpUri, setTotpUri] = useState<string | null>(null);
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
+  const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
 
   async function enable() {
     setError(null);
-    const { data, error: nextError } = await authClient.twoFactor.enable({});
+    const { data, error: nextError } = await authClient.twoFactor.enable({
+      password: password || undefined,
+    });
     if (nextError || !data || !("totpURI" in data)) {
       setError(nextError?.message ?? "Could not start 2FA enrollment");
       return;
@@ -35,11 +38,26 @@ export function TwoFactorSetup() {
       <p className="kicker">Authenticator</p>
       <h2>Set up TOTP 2FA</h2>
       <div className="stack" style={{ marginTop: 16 }}>
+        <label className="muted" htmlFor="twofactor-password">
+          Account password (required if you signed up with username/password)
+        </label>
+        <input
+          id="twofactor-password"
+          className="field"
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder="Leave blank for OAuth-only accounts"
+        />
         <button className="ghost-btn" type="button" onClick={() => void enable()}>
           Generate QR code
         </button>
         {totpUri ? (
-          <div className="row" style={{ justifyContent: "center", padding: 12, background: "#fff", borderRadius: 20 }}>
+          <div
+            className="row"
+            style={{ justifyContent: "center", padding: 12, background: "#fff", borderRadius: 20 }}
+          >
             <QRCodeSVG value={totpUri} size={180} />
           </div>
         ) : null}

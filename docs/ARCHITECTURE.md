@@ -17,7 +17,7 @@ Render process
 
 ## Auth
 
-`backend/src/auth.ts` configures better-auth with the Drizzle adapter, Google OAuth, the passkey plugin, and the twoFactor plugin (`allowPasswordless: true` so Google users can enroll TOTP). Session cookies are cross-site in production.
+`backend/src/auth.ts` configures better-auth with the Drizzle adapter, email/password + username plugin, Google and GitHub OAuth, account linking, the passkey plugin, and the twoFactor plugin (`allowPasswordless: true` so OAuth users can enroll TOTP). Session cookies are cross-site in production. After signup, users link additional methods from the Security panel (`linkSocial`, passkey registration, TOTP, Telegram).
 
 REST and sockets share `resolveSession()` in `requireSession.ts`.
 

@@ -51,6 +51,12 @@ export const env = {
   get GOOGLE_CLIENT_SECRET() {
     return optional("GOOGLE_CLIENT_SECRET", isTest ? "test-google-client-secret" : "");
   },
+  get GITHUB_CLIENT_ID() {
+    return optional("GITHUB_CLIENT_ID", isTest ? "test-github-client-id" : "");
+  },
+  get GITHUB_CLIENT_SECRET() {
+    return optional("GITHUB_CLIENT_SECRET", isTest ? "test-github-client-secret" : "");
+  },
   get TELEGRAM_BOT_TOKEN() {
     return optional("TELEGRAM_BOT_TOKEN");
   },

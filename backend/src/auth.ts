@@ -1,7 +1,7 @@
 import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { twoFactor } from "better-auth/plugins";
+import { twoFactor, username } from "better-auth/plugins";
 import { allowedOrigins, env, isProduction } from "./config.js";
 import { db } from "./db/index.js";
 import * as schema from "./db/schema.js";
@@ -21,10 +21,25 @@ export const auth = betterAuth({
     provider: "pg",
     schema,
   }),
+  emailAndPassword: {
+    enabled: true,
+    minPasswordLength: 8,
+  },
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google", "github"],
+      allowDifferentEmails: true,
+    },
+  },
   socialProviders: {
     google: {
       clientId: env.GOOGLE_CLIENT_ID || "missing-google-client-id",
       clientSecret: env.GOOGLE_CLIENT_SECRET || "missing-google-client-secret",
+    },
+    github: {
+      clientId: env.GITHUB_CLIENT_ID || "missing-github-client-id",
+      clientSecret: env.GITHUB_CLIENT_SECRET || "missing-github-client-secret",
     },
   },
   session: {
@@ -41,6 +56,10 @@ export const auth = betterAuth({
     useSecureCookies: isProduction,
   },
   plugins: [
+    username({
+      minUsernameLength: 3,
+      maxUsernameLength: 32,
+    }),
     twoFactor({
       issuer: "Relay",
       allowPasswordless: true,

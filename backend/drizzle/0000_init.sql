@@ -6,7 +6,9 @@ CREATE TABLE IF NOT EXISTS "user" (
   "image" text,
   "created_at" timestamp NOT NULL DEFAULT now(),
   "updated_at" timestamp NOT NULL DEFAULT now(),
-  "two_factor_enabled" boolean DEFAULT false
+  "two_factor_enabled" boolean DEFAULT false,
+  "username" text UNIQUE,
+  "display_username" text
 );
 
 CREATE TABLE IF NOT EXISTS "session" (
