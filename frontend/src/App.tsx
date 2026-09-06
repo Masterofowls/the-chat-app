@@ -54,7 +54,11 @@ export function App() {
 
   if (loading) {
     return (
-      <main className="auth-screen">
+      <main className="auth-screen page-fade">
+        <div className="skeleton-stack" style={{ width: "min(280px, 80vw)" }}>
+          <div className="skeleton-hero" />
+          <div className="skeleton-row" />
+        </div>
         <p className="muted">Opening Relay…</p>
       </main>
     );

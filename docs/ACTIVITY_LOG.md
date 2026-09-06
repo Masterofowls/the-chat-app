@@ -1,5 +1,19 @@
 # Activity log
 
+## 2026-09-06 23:50 UTC+3
+
+- Telegram/Discord polish: expandable chat list, mobile side-by-side layout, smooth scroll areas, cohesive panel surfaces.
+- Header connectivity: periodic `/health` ping shows `Relay` vs `connecting…`.
+- Settings: back to chats + nested back on mobile; Telegram-style list rows; sign-out moved to profile.
+- PWA: `vite-plugin-pwa` service worker, offline assets, auto-update registration.
+- Lucide-animated icons (motion) for shell/settings; improved self/guest profile views with Message/Share/QR.
+- Frontend `typecheck`, `lint`, and production build succeeded (SW + webmanifest generated).
+
+## 2026-09-06 23:26 UTC+3
+
+- Pushed `feat: messenger UI, settings routes, profile and presence` (`41a2a5d`).
+- Redeployed Render API (`dep-daesoo9t0dsc73bk7mkg`) and Vercel production (`messaging-app-frontend-five.vercel.app`).
+
 ## 2026-09-06 22:55 UTC+3
 
 - Expanded Relay into a messenger-style shell with theme toggle, routed settings pages, and full profile.

@@ -1,14 +1,16 @@
 import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import type { Conversation, PresencePayload, UserSummary } from "../../../../shared/types";
 import { ChatWindow } from "../ChatWindow";
-import { Avatar } from "../ui/Avatar";
-import { UserPresence } from "../ui/UserPresence";
+import { MessageCircleIcon } from "../icons/message-circle";
 
 export type ChatOutletContext = {
   authed: true;
   user: UserSummary;
   conversations: Conversation[];
   presence: Record<string, PresencePayload>;
+  refreshConversations: () => Promise<void>;
+  onSignedOut: () => void;
+  startDirect: (peer: UserSummary) => Promise<void>;
 };
 
 export function ChatPane() {
@@ -22,26 +24,22 @@ export function ChatPane() {
     ? (presence[peer.id]?.lastActiveAt ?? peer.lastActiveAt)
     : null;
 
+  if (!selected || !peer) {
+    return (
+      <div className="empty-chat centered page-fade">
+        <MessageCircleIcon size={40} className="brand-icon" />
+        <p className="kicker">Inbox</p>
+        <h2 className="hero-title">Select a chat</h2>
+        <p className="muted">Pick someone from the list to start messaging.</p>
+        <Link className="ghost-btn" to="/settings">
+          Open settings
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <div className="chat-pane">
-      {peer ? (
-        <aside className="profile-rail" aria-label="Contact profile">
-          <Avatar name={peer.name} image={peer.image} online={online} size="lg" />
-          <h2 className="serif">{peer.name}</h2>
-          <UserPresence
-            isOnline={online}
-            lastActiveAt={lastActive}
-            deviceInfo={peer.deviceInfo}
-          />
-          <button
-            className="ghost-btn"
-            type="button"
-            onClick={() => navigate(`/profile/${peer.id}`)}
-          >
-            Open profile
-          </button>
-        </aside>
-      ) : null}
+    <div className="chat-pane page-fade">
       <div className="chat-main">
         <ChatWindow
           conversation={selected}
@@ -49,21 +47,11 @@ export function ChatPane() {
           peerPresence={{
             isOnline: online,
             lastActiveAt: lastActive,
-            deviceInfo: peer?.deviceInfo ?? null,
+            deviceInfo: peer.deviceInfo,
           }}
-          onOpenProfile={peer ? () => navigate(`/profile/${peer.id}`) : undefined}
+          onOpenProfile={() => navigate(`/profile/${peer.id}`)}
         />
       </div>
-      {!selected ? (
-        <div className="empty-chat centered">
-          <p className="kicker">Inbox</p>
-          <h2 className="hero-title">Select a chat</h2>
-          <p className="muted">Search for people on the left to start messaging.</p>
-          <Link className="primary-btn" to="/settings">
-            Open settings
-          </Link>
-        </div>
-      ) : null}
     </div>
   );
 }

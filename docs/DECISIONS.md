@@ -1,5 +1,9 @@
 # Decisions
 
+## 2026-09-06 — Discord/Telegram shell + PWA
+
+UI follows a Discord-like cool palette and Telegram-like settings lists. Chat list stays beside the conversation on mobile (expandable/collapsible width). Connectivity title pings `/health` and shows `connecting…` when the API is down. Sign-out lives on the profile page only. Offline support uses `vite-plugin-pwa` (generateSW + autoUpdate). Animated icons are vendored from lucide-animated (motion) under `frontend/src/components/icons`.
+
 ## 2026-09-06 — Messenger settings + profile platform
 
 Settings are separate routes (passkeys, accounts, 2FA, sessions, privacy, password, Telegram, danger). Profile stores status/bio/privacy/last-active; avatars are client-cropped JPEG data URLs. Native Telegram auth uses the Login Widget with HMAC verification rather than the incompatible better-auth-telegram peer range.

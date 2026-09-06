@@ -26,11 +26,12 @@ export function ChatWindow({
     useChat({ conversationId: conversation?.id ?? null });
   const [draft, setDraft] = useState("");
   const endRef = useRef<HTMLDivElement | null>(null);
+  const threadRef = useRef<HTMLDivElement | null>(null);
   const peer = conversation?.participants.find((user) => user.id !== currentUser.id);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages.length, typingLabel]);
 
   if (!conversation || !peer) {
     return null;
@@ -54,7 +55,7 @@ export function ChatWindow({
             size="md"
           />
           <span>
-            <strong className="serif">{peer.name}</strong>
+            <strong>{peer.name}</strong>
             <UserPresence
               compact
               isOnline={peerPresence?.isOnline ?? peer.isOnline}
@@ -63,14 +64,20 @@ export function ChatWindow({
             />
           </span>
         </button>
-        <div className="row">
+        <div className="row tight">
           <span className="status-dot" data-on={String(connected)} aria-hidden="true" />
-          <span className="muted">{connected ? "Live" : "Reconnecting"}</span>
+          <span className="muted tiny">{connected ? "Live" : "Reconnecting"}</span>
         </div>
       </header>
-      <div className={styles.thread}>
-        {loading ? <p className="muted">Loading history…</p> : null}
-        {error ? <p className="banner">{error}</p> : null}
+      <div className={`${styles.thread} scroll-y`} ref={threadRef}>
+        {loading ? (
+          <div className="skeleton-stack chat-skel">
+            <div className="skeleton-bubble" />
+            <div className="skeleton-bubble mine" />
+            <div className="skeleton-bubble" />
+          </div>
+        ) : null}
+        {error ? <p className="banner soft">{error}</p> : null}
         {messages.map((message) => (
           <article
             key={message.id}

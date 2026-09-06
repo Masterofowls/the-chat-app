@@ -1,15 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
-import { useNavigate, useParams } from "react-router-dom";
 import type { UserProfile } from "../../../../shared/types";
 import { apiUrl, authClient } from "../../lib/auth-client";
+import { ArrowLeftIcon } from "../icons/arrow-left";
+import { LogoutIcon } from "../icons/logout";
+import { SettingsIcon } from "../icons/settings";
 import { Avatar } from "../ui/Avatar";
 import { UserPresence } from "../ui/UserPresence";
 import { AvatarCropper } from "./AvatarCropper";
+import type { ChatOutletContext } from "../layout/ChatPane";
 
 export function ProfilePage({ self = false }: { self?: boolean }) {
   const params = useParams();
   const navigate = useNavigate();
+  const { user, onSignedOut, startDirect } = useOutletContext<ChatOutletContext>();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -17,6 +22,8 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
   const [description, setDescription] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [showQr, setShowQr] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [signingOut, setSigningOut] = useState(false);
 
   const userId = self ? "me" : params.userId;
   const shareUrl = useMemo(() => {
@@ -26,11 +33,13 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
 
   useEffect(() => {
     void (async () => {
+      setLoading(true);
       setError(null);
       const path = self || userId === "me" ? "/me/profile" : `/users/${userId}/profile`;
       const response = await fetch(`${apiUrl}${path}`, { credentials: "include" });
       if (!response.ok) {
         setError("Could not load profile");
+        setLoading(false);
         return;
       }
       const data = (await response.json()) as { profile: UserProfile };
@@ -38,8 +47,11 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
       setName(data.profile.name);
       setCustomStatus(data.profile.customStatus ?? "");
       setDescription(data.profile.description ?? "");
+      setLoading(false);
     })();
   }, [userId, self]);
+
+  const isSelf = self || profile?.id === user.id;
 
   async function saveProfile() {
     const response = await fetch(`${apiUrl}/me/profile`, {
@@ -79,52 +91,109 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
     }
   }
 
-  if (!profile) {
+  async function signOut() {
+    setSigningOut(true);
+    try {
+      await authClient.signOut();
+      onSignedOut();
+      navigate("/", { replace: true });
+    } catch {
+      setError("Could not sign out");
+      setSigningOut(false);
+    }
+  }
+
+  if (loading) {
     return (
-      <div className="settings-page">
-        <p className="muted">{error || "Loading profile…"}</p>
+      <div className="profile-page page-fade">
+        <div className="skeleton-stack">
+          <div className="skeleton-hero" />
+          <div className="skeleton-row" />
+          <div className="skeleton-row" />
+        </div>
       </div>
     );
   }
 
-  const isSelf = self || profile.email.length > 0;
+  if (!profile) {
+    return (
+      <div className="profile-page page-fade">
+        <button className="ghost-btn back-btn" type="button" onClick={() => navigate(-1)}>
+          <ArrowLeftIcon size={18} />
+          Back
+        </button>
+        <p className="muted">{error || "Profile not found"}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="profile-page">
-      <button className="ghost-btn" type="button" onClick={() => navigate(-1)}>
-        Back
-      </button>
-      <header className="profile-hero">
-        <Avatar name={profile.name} image={profile.image} online={profile.isOnline} size="xl" />
-        <div>
-          <p className="kicker">{profile.username ? `@${profile.username}` : "Relay profile"}</p>
+    <div className={`profile-page page-fade ${isSelf ? "self" : "guest"}`}>
+      <header className="profile-toolbar">
+        <button className="ghost-btn back-btn" type="button" onClick={() => navigate(-1)}>
+          <ArrowLeftIcon size={18} />
+          Back
+        </button>
+        {isSelf ? (
+          <Link className="ghost-btn back-btn" to="/settings">
+            <SettingsIcon size={18} />
+            Settings
+          </Link>
+        ) : null}
+      </header>
+
+      <div className="profile-card">
+        <div className="profile-hero-stack">
+          <Avatar name={profile.name} image={profile.image} online={profile.isOnline} size="xl" />
+          <p className="kicker">{profile.username ? `@${profile.username}` : "Relay"}</p>
           <h1 className="serif">{profile.name}</h1>
           {profile.customStatus ? <p className="status-line">{profile.customStatus}</p> : null}
           <UserPresence
             isOnline={profile.isOnline}
             lastActiveAt={profile.lastActiveAt}
-            deviceInfo={profile.deviceInfo}
+            deviceInfo={isSelf ? profile.deviceInfo : profile.deviceInfo}
           />
         </div>
-      </header>
-      {profile.description ? <p className="profile-bio">{profile.description}</p> : null}
-      <div className="row" style={{ marginTop: 16 }}>
-        <button className="primary-btn" type="button" onClick={() => void shareProfile()}>
-          Share profile
-        </button>
-        <button className="ghost-btn" type="button" onClick={() => setShowQr((v) => !v)}>
-          {showQr ? "Hide QR" : "QR code"}
-        </button>
-      </div>
-      {showQr ? (
-        <div className="qr-wrap" style={{ marginTop: 16 }}>
-          <QRCodeSVG value={shareUrl} size={180} />
-          <p className="muted">{shareUrl}</p>
+
+        {profile.description ? <p className="profile-bio">{profile.description}</p> : null}
+
+        <div className="row wrap" style={{ marginTop: 16, justifyContent: "center" }}>
+          {!isSelf ? (
+            <button
+              className="primary-btn"
+              type="button"
+              onClick={() =>
+                void startDirect({
+                  id: profile.id,
+                  name: profile.name,
+                  email: profile.email,
+                  image: profile.image,
+                  username: profile.username,
+                  isOnline: profile.isOnline,
+                })
+              }
+            >
+              Message
+            </button>
+          ) : null}
+          <button className="primary-btn" type="button" onClick={() => void shareProfile()}>
+            Share
+          </button>
+          <button className="ghost-btn" type="button" onClick={() => setShowQr((v) => !v)}>
+            {showQr ? "Hide QR" : "QR code"}
+          </button>
         </div>
-      ) : null}
+
+        {showQr ? (
+          <div className="qr-wrap" style={{ marginTop: 16 }}>
+            <QRCodeSVG value={shareUrl} size={180} />
+            <p className="muted">{shareUrl}</p>
+          </div>
+        ) : null}
+      </div>
 
       {isSelf ? (
-        <div className="stack" style={{ marginTop: 28 }}>
+        <div className="profile-card stack" style={{ marginTop: 16 }}>
           <h2 className="serif">Edit profile</h2>
           <AvatarCropper
             onSaved={(image) => setProfile((current) => (current ? { ...current, image } : current))}
@@ -162,8 +231,25 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
           <button className="primary-btn" type="button" onClick={() => void saveProfile()}>
             Save profile
           </button>
+          <button
+            className="danger-btn sign-out-btn"
+            type="button"
+            disabled={signingOut}
+            onClick={() => void signOut()}
+          >
+            <LogoutIcon size={18} />
+            {signingOut ? "Signing out…" : "Sign out"}
+          </button>
         </div>
-      ) : null}
+      ) : (
+        <div className="profile-card" style={{ marginTop: 16 }}>
+          <p className="muted">
+            This is a public Relay profile. Presence and device details respect their privacy
+            settings.
+          </p>
+        </div>
+      )}
+
       {message ? <p className="banner success">{message}</p> : null}
       {error ? <p className="banner">{error}</p> : null}
     </div>
