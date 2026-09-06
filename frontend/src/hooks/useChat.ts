@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Message, TypingPayload } from "../../../shared/types";
 import { apiUrl } from "../lib/auth-client";
+import { E2E_MESSAGES, isE2eMode } from "../lib/e2e-fixtures";
 import { getSocket } from "../lib/socket";
 
 type UseChatOptions = {
@@ -15,6 +16,11 @@ export function useChat({ conversationId }: UseChatOptions) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isE2eMode()) {
+      setConnected(true);
+      return;
+    }
+
     const socket = getSocket();
 
     const onConnect = () => setConnected(true);
@@ -75,6 +81,13 @@ export function useChat({ conversationId }: UseChatOptions) {
       return;
     }
 
+    if (isE2eMode() && conversationId === "e2e-conversation") {
+      setMessages(E2E_MESSAGES);
+      setConnected(true);
+      setLoading(false);
+      return;
+    }
+
     socket.emit("conversation:join", { conversationId });
 
     let cancelled = false;
@@ -112,6 +125,29 @@ export function useChat({ conversationId }: UseChatOptions) {
   const sendMessage = useCallback(
     (body: string) => {
       if (!conversationId || !body.trim()) {
+        return;
+      }
+      if (isE2eMode()) {
+        const now = new Date().toISOString();
+        setMessages((current) => [
+          ...current,
+          {
+            id: `e2e-local-${Date.now()}`,
+            conversationId,
+            senderId: "e2e-user",
+            body: body.trim(),
+            createdAt: now,
+            updatedAt: now,
+            sender: {
+              id: "e2e-user",
+              name: "Relay Demo",
+              email: "demo@relay.test",
+              image: null,
+              username: "relaydemo",
+              isOnline: true,
+            },
+          },
+        ]);
         return;
       }
       getSocket().emit("message:send", { conversationId, body: body.trim() });

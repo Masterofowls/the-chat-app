@@ -4,9 +4,18 @@ import { apiUrl } from "./auth-client";
 export type ConnectionState = "online" | "connecting" | "offline";
 
 export function useApiHealth(intervalMs = 8000) {
-  const [state, setState] = useState<ConnectionState>("connecting");
+  const [state, setState] = useState<ConnectionState>(() =>
+    typeof window !== "undefined" &&
+    (import.meta.env.VITE_E2E === "1" || localStorage.getItem("relay-e2e") === "1")
+      ? "online"
+      : "connecting",
+  );
 
   const ping = useCallback(async () => {
+    if (import.meta.env.VITE_E2E === "1" || localStorage.getItem("relay-e2e") === "1") {
+      setState("online");
+      return;
+    }
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), 3500);
     try {

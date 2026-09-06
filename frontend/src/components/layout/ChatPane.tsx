@@ -1,4 +1,4 @@
-import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import type { Conversation, PresencePayload, UserSummary } from "../../../../shared/types";
 import { ChatWindow } from "../ChatWindow";
 import { MessageCircleIcon } from "../icons/message-circle";
@@ -28,12 +28,7 @@ export function ChatPane() {
     return (
       <div className="empty-chat centered page-fade">
         <MessageCircleIcon size={40} className="brand-icon" />
-        <p className="kicker">Inbox</p>
-        <h2 className="hero-title">Select a chat</h2>
-        <p className="muted">Pick someone from the list to start messaging.</p>
-        <Link className="ghost-btn" to="/settings">
-          Open settings
-        </Link>
+        <p className="muted">Select a chat to start messaging</p>
       </div>
     );
   }
@@ -50,6 +45,7 @@ export function ChatPane() {
             deviceInfo: peer.deviceInfo,
           }}
           onOpenProfile={() => navigate(`/profile/${peer.id}`)}
+          onBack={() => navigate("/")}
         />
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { Conversation, UserSummary } from "../../../shared/types";
 import { useChat } from "../hooks/useChat";
+import { ArrowLeftIcon } from "./icons/arrow-left";
 import { Avatar } from "./ui/Avatar";
 import { UserPresence } from "./ui/UserPresence";
 import styles from "./ChatWindow.module.css";
@@ -14,13 +15,19 @@ type ChatWindowProps = {
     deviceInfo?: string | null;
   };
   onOpenProfile?: () => void;
+  onBack?: () => void;
 };
+
+function formatBubbleTime(iso: string) {
+  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
 
 export function ChatWindow({
   conversation,
   currentUser,
   peerPresence,
   onOpenProfile,
+  onBack,
 }: ChatWindowProps) {
   const { messages, typingLabel, connected, loading, error, sendMessage, startTyping, stopTyping } =
     useChat({ conversationId: conversation?.id ?? null });
@@ -47,6 +54,16 @@ export function ChatWindow({
   return (
     <section className={styles.window} aria-label={`Conversation with ${peer.name}`}>
       <header className="chat-top">
+        {onBack ? (
+          <button
+            type="button"
+            className={`icon-btn mobile-only ${styles.backBtn}`}
+            onClick={onBack}
+            aria-label="Back to chats"
+          >
+            <ArrowLeftIcon size={20} />
+          </button>
+        ) : null}
         <button type="button" className="chat-peer" onClick={onOpenProfile}>
           <Avatar
             name={peer.name}
@@ -64,10 +81,12 @@ export function ChatWindow({
             />
           </span>
         </button>
-        <div className="row tight">
-          <span className="status-dot" data-on={String(connected)} aria-hidden="true" />
-          <span className="muted tiny">{connected ? "Live" : "Reconnecting"}</span>
-        </div>
+        <span
+          className={`status-dot ${styles.liveDot}`}
+          data-on={String(connected)}
+          title={connected ? "Connected" : "Reconnecting"}
+          aria-label={connected ? "Connected" : "Reconnecting"}
+        />
       </header>
       <div className={`${styles.thread} scroll-y`} ref={threadRef}>
         {loading ? (
@@ -78,17 +97,22 @@ export function ChatWindow({
           </div>
         ) : null}
         {error ? <p className="banner soft">{error}</p> : null}
-        {messages.map((message) => (
-          <article
-            key={message.id}
-            className={`${styles.bubble} ${message.senderId === currentUser.id ? styles.mine : ""}`}
-          >
-            <span className={styles.meta}>
-              {message.sender.name} · {new Date(message.createdAt).toLocaleTimeString()}
-            </span>
-            {message.body}
-          </article>
-        ))}
+        {messages.map((message) => {
+          const mine = message.senderId === currentUser.id;
+          return (
+            <article
+              key={message.id}
+              className={`${styles.bubble} ${mine ? styles.mine : ""}`}
+            >
+              <p className={styles.body}>{message.body}</p>
+              <footer className={styles.bubbleFoot}>
+                <time className={styles.time} dateTime={message.createdAt}>
+                  {formatBubbleTime(message.createdAt)}
+                </time>
+              </footer>
+            </article>
+          );
+        })}
         <div ref={endRef} />
       </div>
       <p className={styles.typing} aria-live="polite">
@@ -110,8 +134,8 @@ export function ChatWindow({
           rows={1}
           placeholder="Message"
         />
-        <button className="primary-btn" type="submit">
-          Send
+        <button className={styles.sendBtn} type="submit" aria-label="Send">
+          <span aria-hidden="true">Send</span>
         </button>
       </form>
     </section>

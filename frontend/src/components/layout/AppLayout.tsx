@@ -9,6 +9,7 @@ import { SearchIcon } from "../icons/search";
 import { SettingsIcon } from "../icons/settings";
 import { SunIcon } from "../icons/sun";
 import { apiUrl } from "../../lib/auth-client";
+import { E2E_CONVERSATIONS, E2E_PEER, isE2eMode } from "../../lib/e2e-fixtures";
 import { useTheme } from "../../lib/theme";
 import { useApiHealth } from "../../lib/useApiHealth";
 import { getSocket } from "../../lib/socket";
@@ -18,6 +19,10 @@ type AppLayoutProps = {
   user: UserSummary;
   onSignedOut: () => void;
 };
+
+function formatConversationTime(iso: string) {
+  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
 
 export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
   const { theme, toggleTheme } = useTheme();
@@ -33,9 +38,23 @@ export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
   const [listOpen, setListOpen] = useState(true);
   const [booting, setBooting] = useState(true);
   const selectedId = params.conversationId ?? null;
-  const inSettings = location.pathname.startsWith("/settings") || location.pathname === "/me" || location.pathname.startsWith("/profile/");
+  const inSettings =
+    location.pathname.startsWith("/settings") ||
+    location.pathname === "/me" ||
+    location.pathname.startsWith("/profile/");
+  const mobileChat = Boolean(selectedId) || inSettings;
 
   useEffect(() => {
+    if (isE2eMode()) {
+      setConversations(E2E_CONVERSATIONS);
+      setPeople([E2E_PEER]);
+      setBooting(false);
+      setPresence({
+        [E2E_PEER.id]: { userId: E2E_PEER.id, isOnline: true, lastActiveAt: null },
+      });
+      return;
+    }
+
     const socket = getSocket();
     socket.connect();
     const onPresence = (payload: PresencePayload) => {
@@ -51,20 +70,34 @@ export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
     };
   }, [user.id]);
 
-  useEffect(() => {
-    if (selectedId && window.matchMedia("(max-width: 760px)").matches) {
-      setListOpen(true);
-    }
-  }, [selectedId]);
-
   const title = useMemo(() => {
     if (connection !== "online") return "connecting…";
     return "Relay";
   }, [connection]);
 
+  const conversationPeerIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const conversation of conversations) {
+      for (const participant of conversation.participants) {
+        if (participant.id !== user.id) ids.add(participant.id);
+      }
+    }
+    return ids;
+  }, [conversations, user.id]);
+
+  const peopleOnly = useMemo(
+    () => people.filter((peer) => peer.id !== user.id && !conversationPeerIds.has(peer.id)),
+    [people, user.id, conversationPeerIds],
+  );
+
   async function refreshConversations() {
     const response = await fetch(`${apiUrl}/conversations`, { credentials: "include" });
-    if (!response.ok) return;
+    if (!response.ok) {
+      if (isE2eMode()) {
+        setConversations(E2E_CONVERSATIONS);
+      }
+      return;
+    }
     const data = (await response.json()) as { conversations: Conversation[] };
     setConversations(data.conversations);
   }
@@ -73,7 +106,12 @@ export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
     const response = await fetch(`${apiUrl}/conversations/users?q=${encodeURIComponent(q)}`, {
       credentials: "include",
     });
-    if (!response.ok) return;
+    if (!response.ok) {
+      if (isE2eMode()) {
+        setPeople([E2E_PEER]);
+      }
+      return;
+    }
     const data = (await response.json()) as { users: UserSummary[] };
     setPeople(data.users);
   }
@@ -87,6 +125,10 @@ export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
       body: JSON.stringify({ userId: peer.id }),
     });
     if (!response.ok) {
+      if (isE2eMode()) {
+        navigate(`/chat/${E2E_CONVERSATIONS[0]?.id ?? "e2e-conversation"}`);
+        return;
+      }
       setError("Could not open that conversation");
       return;
     }
@@ -96,7 +138,12 @@ export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
   }
 
   return (
-    <div className="app-shell messenger" data-list-open={String(listOpen)} data-settings={String(inSettings)}>
+    <div
+      className="app-shell messenger"
+      data-list-open={String(listOpen)}
+      data-settings={String(inSettings)}
+      data-mobile-chat={String(mobileChat)}
+    >
       <aside className={`sidebar ${listOpen ? "open" : "collapsed"}`}>
         <header className="sidebar-head">
           <div className="brand-block">
@@ -116,7 +163,7 @@ export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
               <SettingsIcon size={20} />
             </Link>
             <button
-              className="icon-btn"
+              className="icon-btn desktop-only"
               type="button"
               aria-label={listOpen ? "Collapse chat list" : "Expand chat list"}
               onClick={() => setListOpen((open) => !open)}
@@ -149,24 +196,6 @@ export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
             </div>
           ) : null}
           {!booting &&
-            people.map((peer) => {
-              const online = presence[peer.id]?.isOnline ?? peer.isOnline;
-              return (
-                <button
-                  key={`person-${peer.id}`}
-                  className="conversation-item"
-                  type="button"
-                  onClick={() => void startDirect(peer)}
-                >
-                  <Avatar name={peer.name} image={peer.image} online={online} size="md" />
-                  <span className="conversation-meta">
-                    <strong>{peer.name}</strong>
-                    <small>{peer.customStatus || peer.username || "Start a chat"}</small>
-                  </span>
-                </button>
-              );
-            })}
-          {!booting &&
             conversations.map((conversation) => {
               const peer = conversation.participants.find((item) => item.id !== user.id);
               const online = peer ? (presence[peer.id]?.isOnline ?? peer.isOnline) : false;
@@ -188,7 +217,17 @@ export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
                     size="md"
                   />
                   <span className="conversation-meta">
-                    <strong>{peer?.name ?? "Direct chat"}</strong>
+                    <span className="conversation-top">
+                      <strong>{peer?.name ?? "Direct chat"}</strong>
+                      {conversation.lastMessage ? (
+                        <time
+                          className="conversation-time"
+                          dateTime={conversation.lastMessage.createdAt}
+                        >
+                          {formatConversationTime(conversation.lastMessage.createdAt)}
+                        </time>
+                      ) : null}
+                    </span>
                     <small>
                       {conversation.lastMessage?.body ??
                         (online ? "Online" : lastActive ? "Recently active" : "No messages yet")}
@@ -197,6 +236,28 @@ export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
                 </button>
               );
             })}
+          {!booting && peopleOnly.length > 0 && query.trim() ? (
+            <>
+              <p className="list-section-label">People</p>
+              {peopleOnly.map((peer) => {
+                const online = presence[peer.id]?.isOnline ?? peer.isOnline;
+                return (
+                  <button
+                    key={`person-${peer.id}`}
+                    className="conversation-item"
+                    type="button"
+                    onClick={() => void startDirect(peer)}
+                  >
+                    <Avatar name={peer.name} image={peer.image} online={online} size="md" />
+                    <span className="conversation-meta">
+                      <strong>{peer.name}</strong>
+                      <small>{peer.customStatus || peer.username || "Start a chat"}</small>
+                    </span>
+                  </button>
+                );
+              })}
+            </>
+          ) : null}
         </div>
 
         <footer className="account-row">
@@ -209,7 +270,7 @@ export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
       <main className="main-pane page-fade">
         {!listOpen ? (
           <button
-            className="floating-expand"
+            className="floating-expand desktop-only"
             type="button"
             aria-label="Expand chat list"
             onClick={() => setListOpen(true)}

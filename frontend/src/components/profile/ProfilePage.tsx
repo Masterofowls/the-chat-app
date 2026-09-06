@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import type { UserProfile } from "../../../../shared/types";
+import { E2E_PEER, E2E_PROFILE, isE2eMode } from "../../lib/e2e-fixtures";
 import { apiUrl, authClient } from "../../lib/auth-client";
 import { ArrowLeftIcon } from "../icons/arrow-left";
 import { LogoutIcon } from "../icons/logout";
@@ -34,6 +35,29 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
     void (async () => {
       setLoading(true);
       setError(null);
+
+      if (isE2eMode()) {
+        const demo: UserProfile =
+          self || userId === "me" || userId === E2E_PROFILE.id
+            ? E2E_PROFILE
+            : {
+                ...E2E_PEER,
+                customStatus: "hello",
+                description: "Alice on Relay",
+                lastActiveAt: null,
+                isOnline: true,
+                deviceInfo: null,
+                showLastActive: true,
+                showDeviceInfo: false,
+              };
+        setProfile(demo);
+        setName(demo.name);
+        setCustomStatus(demo.customStatus ?? "");
+        setDescription(demo.description ?? "");
+        setLoading(false);
+        return;
+      }
+
       const path = self || userId === "me" ? "/me/profile" : `/users/${userId}/profile`;
       const response = await fetch(`${apiUrl}${path}`, { credentials: "include" });
       if (!response.ok) {
@@ -139,9 +163,7 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
         </header>
       ) : (
         <header className="profile-toolbar">
-          <h2 className="serif" style={{ margin: 0 }}>
-            My profile
-          </h2>
+          <h2 style={{ margin: 0 }}>My profile</h2>
         </header>
       )}
 
@@ -149,7 +171,7 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
         <div className="profile-hero-stack">
           <Avatar name={profile.name} image={profile.image} online={profile.isOnline} size="xl" />
           <p className="kicker">{profile.username ? `@${profile.username}` : "Relay"}</p>
-          <h1 className="serif">{profile.name}</h1>
+          <h1>{profile.name}</h1>
           {profile.customStatus ? <p className="status-line">{profile.customStatus}</p> : null}
           <UserPresence
             isOnline={profile.isOnline}
@@ -197,7 +219,7 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
 
       {isSelf ? (
         <div className="profile-card stack" style={{ marginTop: 16 }}>
-          <h2 className="serif">Edit profile</h2>
+          <h2>Edit profile</h2>
           <AvatarCropper
             onSaved={(image) => setProfile((current) => (current ? { ...current, image } : current))}
           />

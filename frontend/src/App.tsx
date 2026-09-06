@@ -16,6 +16,7 @@ import { SettingsOverview } from "./components/settings/SettingsOverview";
 import { TelegramSettings } from "./components/settings/TelegramSettings";
 import { TwoFactorSettings } from "./components/settings/TwoFactorSettings";
 import { authClient } from "./lib/auth-client";
+import { E2E_USER, enableE2eFromUrl, isE2eMode } from "./lib/e2e-fixtures";
 
 export function App() {
   const [user, setUser] = useState<UserSummary | null>(null);
@@ -49,6 +50,16 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    enableE2eFromUrl();
+    const e2e =
+      isE2eMode() || new URLSearchParams(window.location.search).get("e2e") === "1";
+    if (e2e) {
+      queueMicrotask(() => {
+        setUser(E2E_USER);
+        setLoading(false);
+      });
+      return;
+    }
     void loadSession();
   }, [loadSession]);
 
