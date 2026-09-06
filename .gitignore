@@ -1,0 +1,53 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# builds
+dist/
+build/
+*.tsbuildinfo
+
+# env / secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+backend/.env
+frontend/.env
+frontend/.env.production
+
+# logs
+logs/
+*.log
+npm-debug.log*
+.session-logs/
+
+# test / coverage
+coverage/
+.nyc_output/
+
+# tooling
+.eslintcache
+.prettiercache
+.cache/
+.vite/
+.turbo/
+
+# drizzle local
+backend/drizzle/meta/_journal.json.bak
+
+# platform
+.netlify/
+.vercel/
+.wrangler/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# generated
+*.pem
