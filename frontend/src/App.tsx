@@ -84,6 +84,7 @@ export function App() {
         <Route path="chat/:conversationId" element={<ChatPane />} />
         <Route path="settings" element={<SettingsLayout />}>
           <Route index element={<SettingsOverview />} />
+          <Route path="profile" element={<ProfilePage self />} />
           <Route path="passkeys" element={<PasskeysSettings />} />
           <Route path="accounts" element={<AccountsSettings />} />
           <Route path="two-factor" element={<TwoFactorSettings />} />
@@ -93,7 +94,7 @@ export function App() {
           <Route path="telegram" element={<TelegramSettings />} />
           <Route path="danger" element={<DangerSettings />} />
         </Route>
-        <Route path="me" element={<ProfilePage self />} />
+        <Route path="me" element={<Navigate to="/settings/profile" replace />} />
         <Route path="profile/:userId" element={<ProfilePage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

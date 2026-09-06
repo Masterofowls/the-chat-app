@@ -6,7 +6,7 @@ import { UserIcon } from "../icons/user";
 import { WifiIcon } from "../icons/wifi";
 
 const links = [
-  { to: "/me", end: true, label: "My profile", icon: UserIcon },
+  { to: "/settings/profile", label: "My profile", icon: UserIcon },
   { to: "/settings/passkeys", label: "Passkeys", icon: SettingsIcon },
   { to: "/settings/accounts", label: "Connected accounts", icon: WifiIcon },
   { to: "/settings/two-factor", label: "Two-factor", icon: SettingsIcon },
@@ -39,7 +39,6 @@ export function SettingsLayout() {
               <NavLink
                 key={link.to}
                 to={link.to}
-                end={link.end}
                 className={({ isActive }) => `settings-link${isActive ? " active" : ""}`}
               >
                 <Icon size={18} />

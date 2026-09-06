@@ -1,5 +1,11 @@
 # Activity log
 
+## 2026-09-07 00:06 UTC+3
+
+- Pushed `feat: Discord/Telegram UI polish, PWA, and connectivity header` (`b2c8477`).
+- Deployed Vercel production: https://messaging-app-frontend-five.vercel.app (`dpl_EJhQ8yEP2aTJ1SfXwDXzZr4ZQToN`).
+- API unchanged (frontend-only); Render not redeployed.
+
 ## 2026-09-06 23:50 UTC+3
 
 - Telegram/Discord polish: expandable chat list, mobile side-by-side layout, smooth scroll areas, cohesive panel surfaces.

@@ -200,7 +200,7 @@ export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
         </div>
 
         <footer className="account-row">
-          <Link to="/me" className="self-chip" title="Open your profile">
+          <Link to="/settings/profile" className="self-chip" title="Open your profile">
             <Avatar name={user.name} image={user.image} online size="md" />
           </Link>
         </footer>

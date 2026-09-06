@@ -5,7 +5,7 @@ import { WifiIcon } from "../icons/wifi";
 import { LogoutIcon } from "../icons/logout";
 
 const items = [
-  { to: "/me", label: "My profile", hint: "Photo, status, share", icon: UserIcon },
+  { to: "/settings/profile", label: "My profile", hint: "Photo, status, share", icon: UserIcon },
   { to: "/settings/passkeys", label: "Passkeys", hint: "Devices & authenticators", icon: SettingsIcon },
   { to: "/settings/accounts", label: "Connected accounts", hint: "Google, GitHub, Telegram", icon: WifiIcon },
   { to: "/settings/two-factor", label: "Two-factor", hint: "Authenticator app", icon: SettingsIcon },

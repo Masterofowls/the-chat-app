@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import type { UserProfile } from "../../../../shared/types";
 import { apiUrl, authClient } from "../../lib/auth-client";
 import { ArrowLeftIcon } from "../icons/arrow-left";
 import { LogoutIcon } from "../icons/logout";
-import { SettingsIcon } from "../icons/settings";
 import { Avatar } from "../ui/Avatar";
 import { UserPresence } from "../ui/UserPresence";
 import { AvatarCropper } from "./AvatarCropper";
@@ -105,7 +104,7 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
 
   if (loading) {
     return (
-      <div className="profile-page page-fade">
+      <div className={`profile-page page-fade ${isSelf ? "self" : "guest"}`}>
         <div className="skeleton-stack">
           <div className="skeleton-hero" />
           <div className="skeleton-row" />
@@ -118,29 +117,33 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
   if (!profile) {
     return (
       <div className="profile-page page-fade">
-        <button className="ghost-btn back-btn" type="button" onClick={() => navigate(-1)}>
-          <ArrowLeftIcon size={18} />
-          Back
-        </button>
+        {!self ? (
+          <button className="ghost-btn back-btn" type="button" onClick={() => navigate(-1)}>
+            <ArrowLeftIcon size={18} />
+            Back
+          </button>
+        ) : null}
         <p className="muted">{error || "Profile not found"}</p>
       </div>
     );
   }
 
-  return (
+  const body = (
     <div className={`profile-page page-fade ${isSelf ? "self" : "guest"}`}>
-      <header className="profile-toolbar">
-        <button className="ghost-btn back-btn" type="button" onClick={() => navigate(-1)}>
-          <ArrowLeftIcon size={18} />
-          Back
-        </button>
-        {isSelf ? (
-          <Link className="ghost-btn back-btn" to="/settings">
-            <SettingsIcon size={18} />
-            Settings
-          </Link>
-        ) : null}
-      </header>
+      {!self ? (
+        <header className="profile-toolbar">
+          <button className="ghost-btn back-btn" type="button" onClick={() => navigate(-1)}>
+            <ArrowLeftIcon size={18} />
+            Back
+          </button>
+        </header>
+      ) : (
+        <header className="profile-toolbar">
+          <h2 className="serif" style={{ margin: 0 }}>
+            My profile
+          </h2>
+        </header>
+      )}
 
       <div className="profile-card">
         <div className="profile-hero-stack">
@@ -151,13 +154,13 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
           <UserPresence
             isOnline={profile.isOnline}
             lastActiveAt={profile.lastActiveAt}
-            deviceInfo={isSelf ? profile.deviceInfo : profile.deviceInfo}
+            deviceInfo={profile.deviceInfo}
           />
         </div>
 
         {profile.description ? <p className="profile-bio">{profile.description}</p> : null}
 
-        <div className="row wrap" style={{ marginTop: 16, justifyContent: "center" }}>
+        <div className="row wrap profile-actions">
           {!isSelf ? (
             <button
               className="primary-btn"
@@ -254,4 +257,10 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
       {error ? <p className="banner">{error}</p> : null}
     </div>
   );
+
+  if (self) {
+    return body;
+  }
+
+  return <div className="profile-scroll">{body}</div>;
 }

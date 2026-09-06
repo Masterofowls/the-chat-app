@@ -92,8 +92,9 @@ a {
   --list-w: var(--list-w-collapsed);
 }
 
+/* Full-bleed settings/profile: hiding the sidebar must not leave main in column 1. */
 .app-shell.messenger[data-settings="true"] {
-  --list-w: 0px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .app-shell.messenger[data-settings="true"] .sidebar {
@@ -104,10 +105,19 @@ a {
   min-width: 0;
   min-height: 0;
   height: 100%;
+  width: 100%;
   position: relative;
   background: var(--ink-2);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+.main-pane > * {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
 }
 
 .chat-pane,
@@ -446,12 +456,22 @@ h3,
   transform: scale(1.04);
 }
 
+.profile-actions {
+  margin-top: 16px;
+  justify-content: center;
+}
+
+.profile-actions .primary-btn,
+.profile-actions .ghost-btn {
+  min-width: 120px;
+}
+
 .banner {
   padding: 10px 14px;
   border-radius: 10px;
   background: color-mix(in srgb, var(--danger) 16%, transparent);
   color: var(--paper);
-  margin: 8px 12px;
+  margin: 8px 0;
 }
 
 .banner.soft {
@@ -556,9 +576,10 @@ h3,
 
 .settings-shell {
   display: grid;
-  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
   min-height: 100%;
   height: 100%;
+  width: 100%;
   background: var(--ink-2);
 }
 
@@ -569,6 +590,7 @@ h3,
   display: flex;
   flex-direction: column;
   min-height: 0;
+  height: 100%;
 }
 
 .settings-nav-head {
@@ -607,21 +629,40 @@ h3,
 .settings-panel {
   min-width: 0;
   min-height: 0;
+  height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .settings-panel-body {
   flex: 1;
   min-height: 0;
   overflow: auto;
+  width: 100%;
+  padding: 8px 0 24px;
 }
 
-.settings-panel,
 .settings-page,
 .profile-page {
+  width: min(720px, 100%);
+  margin: 0 auto;
   padding: 20px 24px 32px;
-  max-width: 720px;
+  box-sizing: border-box;
+}
+
+.profile-page.guest,
+.profile-page.self {
+  width: min(560px, 100%);
+}
+
+.profile-scroll {
+  height: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 .back-btn {
@@ -920,6 +961,10 @@ h3,
     --list-w: 64px;
   }
 
+  .app-shell.messenger[data-settings="true"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .desktop-only {
     display: none !important;
   }
@@ -940,16 +985,15 @@ h3,
     display: none;
   }
 
-  .settings-panel,
   .settings-page,
   .profile-page {
     padding: 16px;
-    max-width: none;
+    width: 100%;
   }
 }
 
 @media (max-width: 560px) {
-  .app-shell.messenger {
+  .app-shell.messenger:not([data-settings="true"]) {
     --list-w: min(46vw, 200px);
   }
 
