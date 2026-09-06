@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate, useOutletContext } from "react-router-dom";
+import type { ChatOutletContext } from "../layout/ChatPane";
 import { ArrowLeftIcon } from "../icons/arrow-left";
 import { LogoutIcon } from "../icons/logout";
 import { SettingsIcon } from "../icons/settings";
@@ -20,6 +21,7 @@ const links = [
 export function SettingsLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const outletContext = useOutletContext<ChatOutletContext>();
   const isRoot = location.pathname === "/settings";
 
   return (
@@ -60,7 +62,7 @@ export function SettingsLayout() {
           </button>
         ) : null}
         <div className="settings-panel-body page-fade scroll-y">
-          <Outlet />
+          <Outlet context={outletContext} />
         </div>
       </section>
     </div>
