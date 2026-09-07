@@ -158,12 +158,163 @@
   transform: scale(0.96);
 }
 
-.typing {
-  min-height: 1.1em;
-  margin: 0 14px 2px;
-  color: var(--accent);
-  font-size: 0.8rem;
+.replyQuote {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  margin: 0 0 6px;
+  padding: 6px 8px;
+  border: 0;
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--paper) 8%, transparent);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
 }
+
+.replyQuote strong {
+  font-size: 0.75rem;
+  color: var(--accent);
+}
+
+.replyQuote span {
+  font-size: 0.8rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.replyBtn {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.68rem;
+  padding: 0 4px 0 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.bubble:hover .replyBtn,
+.bubble:focus-within .replyBtn {
+  opacity: 1;
+}
+
+.mention {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.replyBar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin: 0 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--panel-2);
+  border-left: 3px solid var(--accent);
+}
+
+.replyBar strong {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--accent);
+}
+
+.replyBar span {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 52ch;
+}
+
+.composerMain {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.mentionMenu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 6px);
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  z-index: 5;
+  max-height: 180px;
+  overflow: auto;
+}
+
+.mentionMenu button {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+.mentionMenu button:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.mentionMenu small {
+  display: block;
+  color: var(--muted);
+}
+
+.typingDots {
+  display: inline-flex;
+  gap: 3px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.typingDots i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: typing-bounce 1s infinite ease-in-out;
+}
+
+.typingDots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typingDots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes typing-bounce {
+  0%,
+  80%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
 
 @keyframes bubble-in {
   from {

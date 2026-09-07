@@ -10,10 +10,12 @@ import { SettingsIcon } from "../icons/settings";
 import { SunIcon } from "../icons/sun";
 import { apiUrl } from "../../lib/auth-client";
 import { E2E_CONVERSATIONS, E2E_PEER, isE2eMode } from "../../lib/e2e-fixtures";
+import { NotificationToaster, NotificationsProvider, useNotifications } from "../../lib/notifications";
 import { useTheme } from "../../lib/theme";
 import { useApiHealth } from "../../lib/useApiHealth";
 import { getSocket } from "../../lib/socket";
 import { Avatar } from "../ui/Avatar";
+import type { Message } from "../../../../shared/types";
 
 type AppLayoutProps = {
   user: UserSummary;
@@ -25,11 +27,22 @@ function formatConversationTime(iso: string) {
 }
 
 export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
+  const params = useParams();
+  return (
+    <NotificationsProvider enabled activeConversationId={params.conversationId ?? null}>
+      <AppLayoutInner user={user} onSignedOut={onSignedOut} />
+      <NotificationToaster />
+    </NotificationsProvider>
+  );
+}
+
+function AppLayoutInner({ user, onSignedOut }: AppLayoutProps) {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
   const connection = useApiHealth();
+  const { unreadByConversation } = useNotifications();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [people, setPeople] = useState<UserSummary[]>([]);
   const [query, setQuery] = useState("");
@@ -60,13 +73,29 @@ export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
     const onPresence = (payload: PresencePayload) => {
       setPresence((current) => ({ ...current, [payload.userId]: payload }));
     };
+    const onMessage = (payload: Message) => {
+      setConversations((current) => {
+        const next = current.map((conversation) =>
+          conversation.id === payload.conversationId
+            ? {
+                ...conversation,
+                updatedAt: payload.createdAt,
+                lastMessage: payload,
+              }
+            : conversation,
+        );
+        return [...next].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+      });
+    };
     socket.on("presence:update", onPresence);
+    socket.on("message:new", onMessage);
     void (async () => {
       await Promise.all([refreshConversations(), refreshPeople("")]);
       setBooting(false);
     })();
     return () => {
       socket.off("presence:update", onPresence);
+      socket.off("message:new", onMessage);
     };
   }, [user.id]);
 
@@ -219,14 +248,21 @@ export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
                   <span className="conversation-meta">
                     <span className="conversation-top">
                       <strong>{peer?.name ?? "Direct chat"}</strong>
-                      {conversation.lastMessage ? (
-                        <time
-                          className="conversation-time"
-                          dateTime={conversation.lastMessage.createdAt}
-                        >
-                          {formatConversationTime(conversation.lastMessage.createdAt)}
-                        </time>
-                      ) : null}
+                      <span className="conversation-top-right">
+                        {conversation.lastMessage ? (
+                          <time
+                            className="conversation-time"
+                            dateTime={conversation.lastMessage.createdAt}
+                          >
+                            {formatConversationTime(conversation.lastMessage.createdAt)}
+                          </time>
+                        ) : null}
+                        {(unreadByConversation[conversation.id] ?? 0) > 0 ? (
+                          <span className="unread-badge">
+                            {unreadByConversation[conversation.id]}
+                          </span>
+                        ) : null}
+                      </span>
                     </span>
                     <small>
                       {conversation.lastMessage?.body ??

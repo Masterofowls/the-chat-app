@@ -117,8 +117,10 @@ CREATE TABLE IF NOT EXISTS "messages" (
   "conversation_id" text NOT NULL REFERENCES "conversations"("id") ON DELETE CASCADE,
   "sender_id" text NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
   "body" text NOT NULL,
+  "reply_to_id" text,
   "created_at" timestamp NOT NULL DEFAULT now(),
   "updated_at" timestamp NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS "messages_conversationId_idx" ON "messages" ("conversation_id");
 CREATE INDEX IF NOT EXISTS "messages_senderId_idx" ON "messages" ("sender_id");
+CREATE INDEX IF NOT EXISTS "messages_replyToId_idx" ON "messages" ("reply_to_id");

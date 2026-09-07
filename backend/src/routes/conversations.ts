@@ -177,11 +177,13 @@ conversationsRouter.get("/:id/messages", async (req, res, next) => {
         conversationId: messages.conversationId,
         senderId: messages.senderId,
         body: messages.body,
+        replyToId: messages.replyToId,
         createdAt: messages.createdAt,
         updatedAt: messages.updatedAt,
         senderName: user.name,
         senderEmail: user.email,
         senderImage: user.image,
+        senderUsername: user.username,
       })
       .from(messages)
       .innerJoin(user, eq(messages.senderId, user.id))
@@ -189,20 +191,64 @@ conversationsRouter.get("/:id/messages", async (req, res, next) => {
       .orderBy(desc(messages.createdAt))
       .limit(100);
 
-    const history: Message[] = rows.reverse().map((row) => ({
-      id: row.id,
-      conversationId: row.conversationId,
-      senderId: row.senderId,
-      body: row.body,
-      createdAt: row.createdAt.toISOString(),
-      updatedAt: row.updatedAt.toISOString(),
-      sender: {
-        id: row.senderId,
-        name: row.senderName,
-        email: row.senderEmail,
-        image: row.senderImage,
-      },
-    }));
+    const replyIds = [
+      ...new Set(rows.map((row) => row.replyToId).filter((id): id is string => Boolean(id))),
+    ];
+    const replyMap = new Map<
+      string,
+      { id: string; body: string; senderId: string; senderName: string }
+    >();
+    if (replyIds.length > 0) {
+      const replyRows = await db
+        .select({
+          id: messages.id,
+          body: messages.body,
+          senderId: messages.senderId,
+          senderName: user.name,
+        })
+        .from(messages)
+        .innerJoin(user, eq(messages.senderId, user.id))
+        .where(
+          and(
+            eq(messages.conversationId, conversationId),
+            sql`${messages.id} in (${sql.join(
+              replyIds.map((id) => sql`${id}`),
+              sql`, `,
+            )})`,
+          ),
+        );
+      for (const reply of replyRows) {
+        replyMap.set(reply.id, reply);
+      }
+    }
+
+    const history: Message[] = rows.reverse().map((row) => {
+      const reply = row.replyToId ? replyMap.get(row.replyToId) : undefined;
+      return {
+        id: row.id,
+        conversationId: row.conversationId,
+        senderId: row.senderId,
+        body: row.body,
+        createdAt: row.createdAt.toISOString(),
+        updatedAt: row.updatedAt.toISOString(),
+        replyToId: row.replyToId,
+        replyTo: reply
+          ? {
+              id: reply.id,
+              body: reply.body,
+              senderId: reply.senderId,
+              senderName: reply.senderName,
+            }
+          : null,
+        sender: {
+          id: row.senderId,
+          name: row.senderName,
+          email: row.senderEmail,
+          image: row.senderImage,
+          username: row.senderUsername,
+        },
+      };
+    });
 
     res.json({ messages: history });
   } catch (error) {

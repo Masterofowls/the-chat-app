@@ -10,6 +10,13 @@ export type UserSummary = {
   deviceInfo?: string | null;
 };
 
+export type MessageReplyPreview = {
+  id: string;
+  body: string;
+  senderId: string;
+  senderName: string;
+};
+
 export type Conversation = {
   id: string;
   createdAt: string;
@@ -26,6 +33,9 @@ export type Message = {
   createdAt: string;
   updatedAt: string;
   sender: UserSummary;
+  replyToId?: string | null;
+  replyTo?: MessageReplyPreview | null;
+  mentions?: string[];
 };
 
 export type TypingPayload = {
@@ -40,6 +50,20 @@ export type PresencePayload = {
   lastActiveAt: string | null;
 };
 
+export type NotificationType = "message" | "mention" | "reply";
+
+export type NotificationPayload = {
+  id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  conversationId: string;
+  messageId: string;
+  createdAt: string;
+  fromUserId: string;
+  fromUserName: string;
+};
+
 export type SocketErrorPayload = {
   code: string;
   message: string;
@@ -48,10 +72,15 @@ export type SocketErrorPayload = {
 export type ClientToServerEvents = {
   "conversation:join": (payload: { conversationId: string }) => void;
   "conversation:leave": (payload: { conversationId: string }) => void;
-  "message:send": (payload: { conversationId: string; body: string }) => void;
+  "message:send": (payload: {
+    conversationId: string;
+    body: string;
+    replyToId?: string | null;
+  }) => void;
   "typing:start": (payload: { conversationId: string }) => void;
   "typing:stop": (payload: { conversationId: string }) => void;
   "presence:ping": () => void;
+  "notification:ack": (payload: { notificationId: string }) => void;
 };
 
 export type ServerToClientEvents = {
@@ -59,6 +88,7 @@ export type ServerToClientEvents = {
   "typing:start": (payload: TypingPayload) => void;
   "typing:stop": (payload: TypingPayload) => void;
   "presence:update": (payload: PresencePayload) => void;
+  "notification:new": (payload: NotificationPayload) => void;
   error: (payload: SocketErrorPayload) => void;
 };
 

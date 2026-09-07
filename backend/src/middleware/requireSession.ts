@@ -57,6 +57,10 @@ export async function resolveSession(headers: IncomingHttpHeaders): Promise<{
         name: fromAuth.user.name,
         email: fromAuth.user.email,
         image: fromAuth.user.image ?? null,
+        username:
+          "username" in fromAuth.user
+            ? ((fromAuth.user as { username?: string | null }).username ?? null)
+            : null,
       },
     };
   }
@@ -74,6 +78,7 @@ export async function resolveSession(headers: IncomingHttpHeaders): Promise<{
       name: user.name,
       email: user.email,
       image: user.image,
+      username: user.username,
     })
     .from(session)
     .innerJoin(user, eq(session.userId, user.id))
@@ -91,6 +96,7 @@ export async function resolveSession(headers: IncomingHttpHeaders): Promise<{
       name: row.name,
       email: row.email,
       image: row.image,
+      username: row.username,
     },
   };
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Message, TypingPayload } from "../../../shared/types";
 import { apiUrl } from "../lib/auth-client";
 import { E2E_MESSAGES, isE2eMode } from "../lib/e2e-fixtures";
@@ -8,12 +8,18 @@ type UseChatOptions = {
   conversationId: string | null;
 };
 
+type SendOptions = {
+  replyToId?: string | null;
+};
+
 export function useChat({ conversationId }: UseChatOptions) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [typing, setTyping] = useState<TypingPayload[]>([]);
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const typingTimer = useRef<number | null>(null);
+  const typingActive = useRef(false);
 
   useEffect(() => {
     if (isE2eMode()) {
@@ -122,13 +128,46 @@ export function useChat({ conversationId }: UseChatOptions) {
     };
   }, [conversationId]);
 
+  const stopTyping = useCallback(() => {
+    if (!conversationId || isE2eMode()) {
+      typingActive.current = false;
+      return;
+    }
+    if (typingTimer.current) {
+      window.clearTimeout(typingTimer.current);
+      typingTimer.current = null;
+    }
+    if (typingActive.current) {
+      getSocket().emit("typing:stop", { conversationId });
+      typingActive.current = false;
+    }
+  }, [conversationId]);
+
+  const startTyping = useCallback(() => {
+    if (!conversationId || isE2eMode()) return;
+    if (!typingActive.current) {
+      getSocket().emit("typing:start", { conversationId });
+      typingActive.current = true;
+    }
+    if (typingTimer.current) {
+      window.clearTimeout(typingTimer.current);
+    }
+    typingTimer.current = window.setTimeout(() => {
+      stopTyping();
+    }, 1800);
+  }, [conversationId, stopTyping]);
+
   const sendMessage = useCallback(
-    (body: string) => {
+    (body: string, options?: SendOptions) => {
       if (!conversationId || !body.trim()) {
         return;
       }
       if (isE2eMode()) {
         const now = new Date().toISOString();
+        const replyTo =
+          options?.replyToId != null
+            ? (E2E_MESSAGES.find((item) => item.id === options.replyToId) ?? null)
+            : null;
         setMessages((current) => [
           ...current,
           {
@@ -138,6 +177,16 @@ export function useChat({ conversationId }: UseChatOptions) {
             body: body.trim(),
             createdAt: now,
             updatedAt: now,
+            replyToId: replyTo?.id ?? null,
+            replyTo: replyTo
+              ? {
+                  id: replyTo.id,
+                  body: replyTo.body,
+                  senderId: replyTo.senderId,
+                  senderName: replyTo.sender.name,
+                }
+              : null,
+            mentions: [],
             sender: {
               id: "e2e-user",
               name: "Relay Demo",
@@ -150,33 +199,26 @@ export function useChat({ conversationId }: UseChatOptions) {
         ]);
         return;
       }
-      getSocket().emit("message:send", { conversationId, body: body.trim() });
+      getSocket().emit("message:send", {
+        conversationId,
+        body: body.trim(),
+        replyToId: options?.replyToId ?? null,
+      });
+      stopTyping();
     },
-    [conversationId],
+    [conversationId, stopTyping],
   );
 
-  const startTyping = useCallback(() => {
-    if (!conversationId) {
-      return;
-    }
-    getSocket().emit("typing:start", { conversationId });
-  }, [conversationId]);
-
-  const stopTyping = useCallback(() => {
-    if (!conversationId) {
-      return;
-    }
-    getSocket().emit("typing:stop", { conversationId });
-  }, [conversationId]);
+  useEffect(() => () => stopTyping(), [stopTyping]);
 
   const typingLabel = useMemo(() => {
     if (typing.length === 0) {
       return "";
     }
     if (typing.length === 1) {
-      return `${typing[0]?.userName ?? "Someone"} is typing`;
+      return `${typing[0]?.userName ?? "Someone"} is typing…`;
     }
-    return "Several people are typing";
+    return "Several people are typing…";
   }, [typing]);
 
   return {

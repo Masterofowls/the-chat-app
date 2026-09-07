@@ -1,5 +1,25 @@
 # Activity log
 
+## 2026-09-07 02:10 UTC+3
+
+- Telegram adaptive shell: `data-mobile-chat` list/chat swap, desktop-only collapse, conversations + People search section with time hints.
+- ChatWindow: mobile `onBack`, bubble footer time, circular send, subtle live dot; ChatPane empty copy + navigate home.
+- E2E fixtures (`e2e-fixtures.ts`) + App/main/AppLayout seed path when `VITE_E2E` / `relay-e2e` / `?e2e=1`.
+- Profile headings sans; typecheck + lint clean.
+
+## 2026-09-07 02:05 UTC+3
+
+- Redesigned frontend to Telegram Web A style: dark/light tokens (`#0e1621` / `#17212b` / `#3390ec`), Roboto, flat panels.
+- Mobile (<720px): list XOR chat via `data-mobile-chat`; desktop dual-pane ~420px list.
+- Chat thread wallpaper, bubble time meta, pill composer + circular send; settings as Telegram section cards.
+- Files: `global.css`, `ChatWindow.module.css`, `index.html`, `AppLayout.tsx` (`data-mobile-chat`).
+
+## 2026-09-07 00:20 UTC+3
+
+- Fixed profile/settings layout: sidebar `display:none` was forcing main into a narrow first grid column.
+- Nested self profile at `/settings/profile` (`/me` redirects); settings nav + panel work on mobile/desktop.
+- Deployed `8221179` to https://messaging-app-frontend-five.vercel.app.
+
 ## 2026-09-07 00:06 UTC+3
 
 - Pushed `feat: Discord/Telegram UI polish, PWA, and connectivity header` (`b2c8477`).

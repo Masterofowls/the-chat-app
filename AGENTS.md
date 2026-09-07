@@ -1,8 +1,8 @@
 ## Learned User Preferences
 
-- Prefer Telegram / WhatsApp / Discord look-and-feel while keeping the existing gold/ink color scheme (light + dark via `data-theme`).
+- Prefer Telegram Web look-and-feel (blue accent `#3390ec`, dark `#0e1621`/`#17212b`, Roboto/system sans; light + dark via `data-theme`).
 - Settings should be separate pages with back navigation, not a single dense settings dump.
-- Prefer smoother transitions/loading, less obvious component chrome, expandable chat list, and dual-pane chat layout on mobile as well as desktop.
+- Prefer smoother transitions/loading, less obvious component chrome; desktop dual-pane (~420px list); mobile Telegram list-XOR-chat with back.
 - Want full PWA + service worker with offline support; header should ping the backend and show connecting vs Relay like Telegram.
 - Prefer Lucide animated icons (lucide-animated.com) where icons are used.
 - Keep AI/tooling directories such as `.cursor`, `.claude`, and `.copilot` in gitignore (including global ignore when asked).

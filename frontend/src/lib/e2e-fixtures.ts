@@ -30,15 +30,26 @@ export const E2E_MESSAGES: Message[] = [
     createdAt: "2026-09-07T10:14:00.000Z",
     updatedAt: "2026-09-07T10:14:00.000Z",
     sender: E2E_PEER,
+    replyToId: null,
+    replyTo: null,
+    mentions: [],
   },
   {
     id: "e2e-message-2",
     conversationId: "e2e-conversation",
     senderId: E2E_USER.id,
-    body: "Thanks! Looks like Telegram.",
+    body: "Thanks @alice! Looks like Telegram.",
     createdAt: lastMessageAt,
     updatedAt: lastMessageAt,
     sender: E2E_USER,
+    replyToId: "e2e-message-1",
+    replyTo: {
+      id: "e2e-message-1",
+      body: "Hey — welcome to Relay",
+      senderId: E2E_PEER.id,
+      senderName: E2E_PEER.name,
+    },
+    mentions: [E2E_PEER.id],
   },
 ];
 

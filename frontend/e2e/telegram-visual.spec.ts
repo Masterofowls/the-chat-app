@@ -40,8 +40,8 @@ test.describe("Telegram shell visuals", () => {
     await page.getByRole("button", { name: /alice/i }).first().click();
     await expect(page).toHaveURL(/\/chat\/e2e-conversation/);
     const thread = page.getByRole("region", { name: /conversation with alice/i });
-    await expect(thread.getByText("Hey — welcome to Relay")).toBeVisible();
-    await expect(thread.getByText("Thanks! Looks like Telegram.")).toBeVisible();
+    await expect(thread.locator("#msg-e2e-message-1")).toContainText("Hey — welcome to Relay");
+    await expect(thread.locator("#msg-e2e-message-2")).toContainText("Thanks @alice! Looks like Telegram.");
 
     if (testInfo.project.name.startsWith("mobile")) {
       await expect(page.getByRole("button", { name: /back to chats/i })).toBeVisible();
@@ -81,7 +81,7 @@ test.describe("Telegram interactions", () => {
     test.skip(!testInfo.project.name.startsWith("mobile"), "mobile only");
     await openE2e(page, "/chat/e2e-conversation");
     const thread = page.getByRole("region", { name: /conversation with alice/i });
-    await expect(thread.getByText("Hey — welcome to Relay")).toBeVisible();
+    await expect(thread.locator("#msg-e2e-message-1")).toBeVisible();
     await page.getByRole("button", { name: /back to chats/i }).click();
     await expect(page).toHaveURL(/\/(\?|$)/);
     await expect(page.locator(".sidebar")).toBeVisible();

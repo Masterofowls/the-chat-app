@@ -307,6 +307,62 @@ h1, h2, h3, .serif, .hero-title {
   line-height: 1.2;
   white-space: nowrap;
 }
+.conversation-top-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.unread-badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-grid;
+  place-items: center;
+}
+.notify-layer {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 40;
+  display: grid;
+  gap: 8px;
+  width: min(340px, calc(100vw - 24px));
+  pointer-events: none;
+}
+.notify-toast,
+.notify-permission {
+  pointer-events: auto;
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  text-align: left;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+.notify-toast {
+  display: grid;
+  gap: 4px;
+  background: var(--panel);
+  color: var(--paper);
+  border: 1px solid var(--line);
+}
+.notify-toast[data-type="mention"],
+.notify-toast[data-type="reply"] {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+.notify-toast strong { font-size: 0.9rem; }
+.notify-toast span { color: var(--muted); font-size: 0.82rem; }
+.notify-permission {
+  background: color-mix(in srgb, var(--accent) 18%, var(--panel));
+  color: var(--paper);
+}
 .list-section-label {
   margin: 10px 14px 4px;
   color: var(--muted);

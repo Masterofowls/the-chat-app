@@ -7,6 +7,8 @@ export const SOCKET_EVENTS = {
   TYPING_STOP: "typing:stop",
   PRESENCE_PING: "presence:ping",
   PRESENCE_UPDATE: "presence:update",
+  NOTIFICATION_NEW: "notification:new",
+  NOTIFICATION_ACK: "notification:ack",
   ERROR: "error",
 } as const;
 

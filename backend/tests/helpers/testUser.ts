@@ -14,18 +14,21 @@ export type TestUser = {
 
 export async function insertTestUser(
   db: Db,
-  overrides: Partial<Pick<TestUser, "name" | "email">> = {},
-): Promise<TestUser> {
+  overrides: Partial<Pick<TestUser, "name" | "email">> & { username?: string } = {},
+): Promise<TestUser & { username?: string }> {
   const id = randomUUID();
   const token = randomUUID();
   const now = new Date();
   const name = overrides.name ?? `User ${id.slice(0, 8)}`;
   const email = overrides.email ?? `${id}@relay.test`;
+  const username = overrides.username ?? `u_${id.slice(0, 8)}`;
 
   await db.insert(schema.user).values({
     id,
     name,
     email,
+    username,
+    displayUsername: username,
     emailVerified: true,
     createdAt: now,
     updatedAt: now,
@@ -46,5 +49,6 @@ export async function insertTestUser(
     email,
     token,
     cookie: `better-auth.session_token=${token}`,
+    username,
   };
 }
