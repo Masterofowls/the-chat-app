@@ -303,7 +303,7 @@ function AppLayoutInner({ user, onSignedOut }: AppLayoutProps) {
         </footer>
       </aside>
 
-      <main className="main-pane page-fade">
+      <main className="main-pane">
         {!listOpen ? (
           <button
             className="floating-expand desktop-only"

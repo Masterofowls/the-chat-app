@@ -6,26 +6,90 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
+    <title>Relay — private realtime messaging</title>
     <meta
       name="description"
-      content="Relay — private realtime messaging with passkeys, Telegram OTP, and 2FA."
+      content="Relay is private realtime messaging with passkeys, 2FA, Telegram OTP, and OAuth. Fast, secure 1:1 chats."
     />
+    <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#17212b" />
+    <meta name="color-scheme" content="dark light" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Relay" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Relay" />
+    <meta property="og:title" content="Relay — private realtime messaging" />
+    <meta
+      property="og:description"
+      content="Private realtime messaging with passkeys, 2FA, Telegram OTP, and OAuth."
+    />
+    <meta property="og:url" content="https://messaging-app-frontend-five.vercel.app/" />
+    <meta property="og:image" content="https://messaging-app-frontend-five.vercel.app/favicon.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Relay — private realtime messaging" />
+    <meta
+      name="twitter:description"
+      content="Private realtime messaging with passkeys, 2FA, Telegram OTP, and OAuth."
+    />
+    <link rel="canonical" href="https://messaging-app-frontend-five.vercel.app/" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://messaging-app-api-20qb.onrender.com" />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+    />
     <link
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
-    <title>Relay</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Relay",
+        "url": "https://messaging-app-frontend-five.vercel.app/",
+        "applicationCategory": "CommunicationApplication",
+        "operatingSystem": "Web",
+        "description": "Private realtime messaging with passkeys, 2FA, Telegram OTP, and OAuth.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+    <style>
+      html, body, #root { height: 100%; margin: 0; background: #0e1621; color: #f5f5f5; }
+      .boot-screen {
+        min-height: 100%;
+        display: grid;
+        place-items: center;
+        font-family: Roboto, "Segoe UI", system-ui, sans-serif;
+      }
+      .boot-screen strong { font-size: 1.35rem; font-weight: 500; letter-spacing: -0.02em; }
+      .boot-screen p { margin: 8px 0 0; color: #708499; font-size: 0.9rem; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot-screen" role="status" aria-live="polite">
+        <div>
+          <strong>Relay</strong>
+          <p>Loading…</p>
+        </div>
+      </div>
+    </div>
+    <noscript>
+      <main style="max-width:40rem;margin:2rem auto;padding:1rem;font-family:system-ui,sans-serif">
+        <h1>Relay</h1>
+        <p>
+          Private realtime messaging with passkeys, two-factor authentication, Telegram OTP, and
+          OAuth. Enable JavaScript to use the app.
+        </p>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -61,7 +61,7 @@ export function SettingsLayout() {
             Settings
           </button>
         ) : null}
-        <div className="settings-panel-body page-fade scroll-y">
+        <div className="settings-panel-body scroll-y">
           <Outlet context={outletContext} />
         </div>
       </section>

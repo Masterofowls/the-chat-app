@@ -94,7 +94,9 @@ export function TwoFactorSettings() {
             </button>
             {totpUri ? (
               <div className="qr-wrap">
-                <QRCodeSVG value={totpUri} size={180} />
+                <div className="qr-card" aria-hidden="true">
+                  <QRCodeSVG value={totpUri} size={180} level="M" includeMargin={false} />
+                </div>
               </div>
             ) : null}
             {backupCodes.length > 0 ? (

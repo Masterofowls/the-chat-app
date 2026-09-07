@@ -1,5 +1,12 @@
 # Activity log
 
+## 2026-09-07 16:40 UTC+3
+
+- Fixed profile QR: white card holds only the code; long share URL wraps in `.qr-url` with copy/open actions.
+- Instant shell feel: disabled staggered `.page-fade`, boot screen instead of cascade skeletons, self-profile seeds from session.
+- SEO: richer `index.html` meta/OG/JSON-LD, `robots.txt`, `sitemap.xml`, `useDocumentMeta`, Vercel cache headers.
+- Restored AppLayout structure after edit; typecheck/lint/build pass locally.
+
 ## 2026-09-07 02:10 UTC+3
 
 - Telegram adaptive shell: `data-mobile-chat` list/chat swap, desktop-only collapse, conversations + People search section with time hints.

@@ -26,7 +26,7 @@ export function ChatPane() {
 
   if (!selected || !peer) {
     return (
-      <div className="empty-chat centered page-fade">
+      <div className="empty-chat centered">
         <MessageCircleIcon size={40} className="brand-icon" />
         <p className="muted">Select a chat to start messaging</p>
       </div>
@@ -34,7 +34,7 @@ export function ChatPane() {
   }
 
   return (
-    <div className="chat-pane page-fade">
+    <div className="chat-pane">
       <div className="chat-main">
         <ChatWindow
           conversation={selected}

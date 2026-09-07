@@ -564,7 +564,7 @@ h1, h2, h3, .serif, .hero-title {
   border: 0;
   background: var(--panel);
 }
-.profile-card { display: block; padding: 22px 18px; }
+.profile-card { display: block; }
 .toggle-row { gap: 16px; }
 .chip {
   display: inline-block;
@@ -582,12 +582,94 @@ h1, h2, h3, .serif, .hero-title {
 .sign-out-btn { margin-top: 8px; width: 100%; }
 .qr-wrap {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   justify-items: center;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 16px;
+  box-sizing: border-box;
+}
+.qr-card {
+  display: grid;
+  place-items: center;
+  width: min(100%, 220px);
+  aspect-ratio: 1;
   padding: 16px;
-  border-radius: 12px;
+  border-radius: 16px;
   background: #fff;
-  color: #111;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-sizing: border-box;
+}
+.qr-card svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 180px;
+}
+.qr-meta {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  justify-items: stretch;
+}
+.qr-url {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.qr-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.page-fade {
+  animation: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .page-fade-soft {
+    animation: page-fade 120ms var(--ease);
+  }
+}
+.boot-screen {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  background: var(--ink, #0e1621);
+  color: var(--paper, #f5f5f5);
+  font-family: Roboto, "Segoe UI", system-ui, sans-serif;
+}
+.boot-screen strong {
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+}
+.boot-screen p {
+  margin: 8px 0 0;
+  color: #708499;
+  font-size: 0.9rem;
+}
+.profile-page {
+  width: min(560px, 100%);
+  margin: 0 auto;
+}
+.profile-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 22px 18px;
+}
+.settings-page {
+  width: min(640px, 100%);
 }
 .crop-stage { display: grid; gap: 12px; }
 .crop-area {
@@ -616,7 +698,6 @@ h1, h2, h3, .serif, .hero-title {
   place-items: center;
   box-shadow: var(--shadow);
 }
-.page-fade { animation: page-fade 220ms var(--ease); }
 .scroll-y {
   overflow: auto;
   overscroll-behavior: contain;

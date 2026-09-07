@@ -4,6 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 import type { UserProfile } from "../../../../shared/types";
 import { E2E_PEER, E2E_PROFILE, isE2eMode } from "../../lib/e2e-fixtures";
 import { apiUrl, authClient } from "../../lib/auth-client";
+import { useDocumentMeta } from "../../lib/seo";
 import { ArrowLeftIcon } from "../icons/arrow-left";
 import { LogoutIcon } from "../icons/logout";
 import { Avatar } from "../ui/Avatar";
@@ -11,19 +12,39 @@ import { UserPresence } from "../ui/UserPresence";
 import { AvatarCropper } from "./AvatarCropper";
 import type { ChatOutletContext } from "../layout/ChatPane";
 
+function seedSelfProfile(user: ChatOutletContext["user"]): UserProfile {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    image: user.image,
+    username: user.username ?? null,
+    customStatus: user.customStatus ?? null,
+    description: null,
+    lastActiveAt: user.lastActiveAt ?? null,
+    isOnline: true,
+    deviceInfo: null,
+    showLastActive: true,
+    showDeviceInfo: true,
+  };
+}
+
 export function ProfilePage({ self = false }: { self?: boolean }) {
   const params = useParams();
   const navigate = useNavigate();
   const { user, onSignedOut, startDirect } = useOutletContext<ChatOutletContext>();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(() =>
+    self ? seedSelfProfile(user) : null,
+  );
   const [error, setError] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [customStatus, setCustomStatus] = useState("");
+  const [name, setName] = useState(self ? user.name : "");
+  const [customStatus, setCustomStatus] = useState(self ? (user.customStatus ?? "") : "");
   const [description, setDescription] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [showQr, setShowQr] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!self);
   const [signingOut, setSigningOut] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const userId = self ? "me" : params.userId;
   const shareUrl = useMemo(() => {
@@ -31,9 +52,20 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
     return `${window.location.origin}/profile/${profile.id}`;
   }, [profile]);
 
+  useDocumentMeta({
+    title: profile
+      ? `${profile.name}${profile.username ? ` (@${profile.username})` : ""} · Relay`
+      : "Profile · Relay",
+    description:
+      profile?.description ||
+      profile?.customStatus ||
+      "Relay profile — private realtime messaging.",
+    path: profile ? `/profile/${profile.id}` : "/settings/profile",
+  });
+
   useEffect(() => {
     void (async () => {
-      setLoading(true);
+      if (!self) setLoading(true);
       setError(null);
 
       if (isE2eMode()) {
@@ -61,7 +93,7 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
       const path = self || userId === "me" ? "/me/profile" : `/users/${userId}/profile`;
       const response = await fetch(`${apiUrl}${path}`, { credentials: "include" });
       if (!response.ok) {
-        setError("Could not load profile");
+        if (!self) setError("Could not load profile");
         setLoading(false);
         return;
       }
@@ -114,6 +146,16 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
     }
   }
 
+  async function copyShareUrl() {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setError("Could not copy link");
+    }
+  }
+
   async function signOut() {
     setSigningOut(true);
     try {
@@ -126,13 +168,15 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
     }
   }
 
-  if (loading) {
+  if (loading && !profile) {
     return (
-      <div className={`profile-page page-fade ${isSelf ? "self" : "guest"}`}>
-        <div className="skeleton-stack">
-          <div className="skeleton-hero" />
-          <div className="skeleton-row" />
-          <div className="skeleton-row" />
+      <div className={`profile-page ${isSelf ? "self" : "guest"}`}>
+        <div className="profile-card">
+          <div className="profile-hero-stack">
+            <Avatar name={user.name} image={user.image} online size="xl" />
+            <p className="kicker">Loading…</p>
+            <h1>{user.name}</h1>
+          </div>
         </div>
       </div>
     );
@@ -140,7 +184,7 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
 
   if (!profile) {
     return (
-      <div className="profile-page page-fade">
+      <div className="profile-page">
         {!self ? (
           <button className="ghost-btn back-btn" type="button" onClick={() => navigate(-1)}>
             <ArrowLeftIcon size={18} />
@@ -153,7 +197,7 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
   }
 
   const body = (
-    <div className={`profile-page page-fade ${isSelf ? "self" : "guest"}`}>
+    <div className={`profile-page ${isSelf ? "self" : "guest"}`}>
       {!self ? (
         <header className="profile-toolbar">
           <button className="ghost-btn back-btn" type="button" onClick={() => navigate(-1)}>
@@ -210,9 +254,21 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
         </div>
 
         {showQr ? (
-          <div className="qr-wrap" style={{ marginTop: 16 }}>
-            <QRCodeSVG value={shareUrl} size={180} />
-            <p className="muted">{shareUrl}</p>
+          <div className="qr-wrap">
+            <div className="qr-card" aria-hidden="true">
+              <QRCodeSVG value={shareUrl} size={180} level="M" includeMargin={false} />
+            </div>
+            <div className="qr-meta">
+              <p className="qr-url">{shareUrl}</p>
+              <div className="qr-actions">
+                <button className="ghost-btn" type="button" onClick={() => void copyShareUrl()}>
+                  {copied ? "Copied" : "Copy link"}
+                </button>
+                <a className="ghost-btn" href={shareUrl} target="_blank" rel="noreferrer">
+                  Open
+                </a>
+              </div>
+            </div>
           </div>
         ) : null}
       </div>

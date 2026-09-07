@@ -17,17 +17,23 @@ import { TelegramSettings } from "./components/settings/TelegramSettings";
 import { TwoFactorSettings } from "./components/settings/TwoFactorSettings";
 import { authClient } from "./lib/auth-client";
 import { E2E_USER, enableE2eFromUrl, isE2eMode } from "./lib/e2e-fixtures";
+import { useDocumentMeta } from "./lib/seo";
 
 export function App() {
   const [user, setUser] = useState<UserSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  useDocumentMeta({
+    title: user ? "Relay" : "Sign in · Relay",
+    path: "/",
+    noIndex: Boolean(user),
+  });
 
   const loadSession = useCallback(async () => {
     try {
       const { data } = await Promise.race([
         authClient.getSession(),
         new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error("session-timeout")), 4000);
+          setTimeout(() => reject(new Error("session-timeout")), 2500);
         }),
       ]);
       if (!data?.user) {
@@ -54,10 +60,8 @@ export function App() {
     const e2e =
       isE2eMode() || new URLSearchParams(window.location.search).get("e2e") === "1";
     if (e2e) {
-      queueMicrotask(() => {
-        setUser(E2E_USER);
-        setLoading(false);
-      });
+      setUser(E2E_USER);
+      setLoading(false);
       return;
     }
     void loadSession();
@@ -65,12 +69,11 @@ export function App() {
 
   if (loading) {
     return (
-      <main className="auth-screen page-fade">
-        <div className="skeleton-stack" style={{ width: "min(280px, 80vw)" }}>
-          <div className="skeleton-hero" />
-          <div className="skeleton-row" />
+      <main className="boot-screen" role="status" aria-live="polite">
+        <div>
+          <strong>Relay</strong>
+          <p>Opening…</p>
         </div>
-        <p className="muted">Opening Relay…</p>
       </main>
     );
   }
