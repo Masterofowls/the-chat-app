@@ -12,7 +12,7 @@ import type {
   SocketData,
   UserSummary,
 } from "../../../shared/types.js";
-import { allowedOrigins } from "../config.js";
+import { isAllowedBrowserOrigin } from "../config.js";
 import { db } from "../db/index.js";
 import { conversations, messages, participants, user } from "../db/schema.js";
 import { highlightPreview, resolveMentionedUsers } from "../lib/mentions.js";
@@ -86,7 +86,9 @@ export function initSocket(httpServer: HttpServer): AppSocketServer {
     SocketData
   >(httpServer, {
     cors: {
-      origin: allowedOrigins,
+      origin: (origin, callback) => {
+        callback(null, isAllowedBrowserOrigin(origin));
+      },
       credentials: true,
     },
   });

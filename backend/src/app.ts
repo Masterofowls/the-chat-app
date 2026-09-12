@@ -2,10 +2,11 @@ import cors from "cors";
 import express from "express";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth.js";
-import { allowedOrigins } from "./config.js";
+import { isAllowedBrowserOrigin } from "./config.js";
 import { resolveSession } from "./middleware/requireSession.js";
 import { conversationsRouter } from "./routes/conversations.js";
 import { profileRouter } from "./routes/profile.js";
+import { sessionsRouter } from "./routes/sessions.js";
 import { telegramOtpRouter } from "./routes/telegram-otp.js";
 import { telegramWidgetRouter } from "./routes/telegram-widget.js";
 
@@ -14,7 +15,13 @@ export function createApp() {
 
   app.use(
     cors({
-      origin: allowedOrigins,
+      origin(origin, callback) {
+        if (isAllowedBrowserOrigin(origin)) {
+          callback(null, origin || true);
+          return;
+        }
+        callback(null, false);
+      },
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     }),
@@ -41,6 +48,7 @@ export function createApp() {
   });
 
   app.use(profileRouter);
+  app.use(sessionsRouter);
   app.use("/telegram", telegramOtpRouter);
   app.use("/telegram", telegramWidgetRouter);
   app.use("/conversations", conversationsRouter);

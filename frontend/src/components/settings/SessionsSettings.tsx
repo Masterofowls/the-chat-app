@@ -1,46 +1,49 @@
 import { useCallback, useEffect, useState } from "react";
-import { authClient } from "../../lib/auth-client";
+import { apiUrl } from "../../lib/auth-client";
 import { formatSessionDate, parseDeviceLabel } from "../../lib/format";
 
 type SessionRow = {
   id: string;
-  token: string;
-  createdAt: string | Date;
-  updatedAt?: string | Date;
+  createdAt: string;
+  updatedAt?: string;
   userAgent?: string | null;
   ipAddress?: string | null;
+  current?: boolean;
 };
 
 export function SessionsSettings() {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
-  const [currentToken, setCurrentToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    const [sessionRes, listRes] = await Promise.all([
-      authClient.getSession(),
-      authClient.listSessions(),
-    ]);
-    setCurrentToken(sessionRes.data?.session?.token ?? null);
-    if (listRes.error) {
-      setError(listRes.error.message ?? "Could not load sessions");
+    const response = await fetch(`${apiUrl}/me/sessions`, { credentials: "include" });
+    if (!response.ok) {
+      setError("Could not load sessions");
       return;
     }
-    setSessions((listRes.data ?? []) as SessionRow[]);
+    const data = (await response.json()) as { sessions: SessionRow[] };
+    setSessions(data.sessions ?? []);
+    setError(null);
   }, []);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
-  async function revoke(token: string) {
-    setBusy(token);
+  async function revoke(id: string) {
+    setBusy(id);
     setError(null);
-    const { error: nextError } = await authClient.revokeSession({ token });
+    const response = await fetch(`${apiUrl}/me/sessions/revoke`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
     setBusy(null);
-    if (nextError) {
-      setError(nextError.message ?? "Could not revoke session");
+    if (!response.ok) {
+      const body = (await response.json().catch(() => ({}))) as { error?: string };
+      setError(body.error ?? "Could not revoke session");
       return;
     }
     await refresh();
@@ -49,11 +52,11 @@ export function SessionsSettings() {
   return (
     <div className="settings-page">
       <p className="kicker">Security</p>
-      <h2 className="serif">Sessions</h2>
+      <h2>Sessions</h2>
       <p className="muted">Devices currently signed in to Relay.</p>
-      <ul className="session-list" style={{ marginTop: 20 }}>
+      <ul className="session-list stack-form">
         {sessions.map((session) => {
-          const isCurrent = session.token === currentToken;
+          const isCurrent = Boolean(session.current);
           return (
             <li key={session.id} className="session-item">
               <div>
@@ -69,8 +72,8 @@ export function SessionsSettings() {
                 <button
                   className="ghost-btn"
                   type="button"
-                  disabled={busy === session.token}
-                  onClick={() => void revoke(session.token)}
+                  disabled={busy === session.id}
+                  onClick={() => void revoke(session.id)}
                 >
                   Log out
                 </button>

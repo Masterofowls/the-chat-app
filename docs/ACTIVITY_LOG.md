@@ -1,5 +1,16 @@
 # Activity log
 
+## 2026-09-12 09:05 UTC+3
+
+- Sessions settings no longer call Better Auth `list-sessions` (403 SESSION_NOT_FRESH on older cookies).
+- Added `GET /me/sessions` and `POST /me/sessions/revoke` behind `requireSession`.
+- Production CORS/trusted origins include the Vercel app and `https://*.vercel.app`.
+
+## 2026-09-12 08:59 UTC+3
+
+- Frontend production deploy via Vercel CLI. Render left to GitHub/CI auto-deploy on `main`.
+- CI `update` on main succeeded; API `/health` returns ok.
+
 ## 2026-09-12 08:50 UTC+3
 
 - Mobile missing `/chat/:id` no longer hides the list; empty pane has Back to chats.

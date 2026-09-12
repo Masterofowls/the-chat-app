@@ -1,5 +1,9 @@
 # Decisions
 
+## 2026-09-12 — Session list bypasses Better Auth freshness
+
+Better Auth `GET /api/auth/list-sessions` uses `freshSessionMiddleware` and returns 403 once the cookie is older than `freshAge`. Viewing devices is not a sensitive action like password change, so Relay lists/revokes sessions on `/me/sessions` with a normal session check and never returns session tokens to the client.
+
 ## 2026-09-12 — Public profile links
 
 QR/share URLs (`/profile/:id`) are viewable without signing in. `GET /users/:id/profile` is public and never returns another user's email. Presence still honors `showLastActive` / `showDeviceInfo`. Messaging still requires a session.

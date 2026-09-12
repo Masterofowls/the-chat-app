@@ -24,10 +24,33 @@ const configuredOrigins = optional("CLIENT_ORIGIN")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
-export const allowedOrigins = [...new Set([...localOrigins, ...configuredOrigins])];
-
 export const isProduction = process.env.NODE_ENV === "production";
 export const isTest = process.env.NODE_ENV === "test";
+
+export const allowedOrigins = [
+  ...new Set([
+    ...localOrigins,
+    ...configuredOrigins,
+    ...(isProduction
+      ? ["https://messaging-app-frontend-five.vercel.app", "https://*.vercel.app"]
+      : []),
+  ]),
+];
+
+export function isAllowedBrowserOrigin(origin: string | undefined): boolean {
+  if (!origin) {
+    return true;
+  }
+  if (allowedOrigins.includes(origin)) {
+    return true;
+  }
+  try {
+    const url = new URL(origin);
+    return url.protocol === "https:" && url.hostname.endsWith(".vercel.app");
+  } catch {
+    return false;
+  }
+}
 
 export const env = {
   get DATABASE_URL() {
