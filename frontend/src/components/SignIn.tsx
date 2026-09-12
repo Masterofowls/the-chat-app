@@ -186,20 +186,20 @@ export function SignIn({ onAuthed }: SignInProps) {
         <p className="lede">
           Use a username and password, then link passkey, 2FA, Google, GitHub, or Telegram.
         </p>
-        <div className="stack" style={{ marginTop: 24 }}>
+        <div className="stack-form auth-form">
           {needsTwoFactor ? (
             <>
-              <label className="muted" htmlFor="totp">
-                Authenticator code
-              </label>
-              <input
-                id="totp"
-                className="field"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                value={totp}
-                onChange={(event) => setTotp(event.target.value)}
-              />
+              <div className="field-group">
+                <label htmlFor="totp">Authenticator code</label>
+                <input
+                  id="totp"
+                  className="field"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={totp}
+                  onChange={(event) => setTotp(event.target.value)}
+                />
+              </div>
               <button className="primary-btn" type="button" onClick={() => void verifyTwoFactor()}>
                 Verify 2FA
               </button>
@@ -235,23 +235,21 @@ export function SignIn({ onAuthed }: SignInProps) {
                 </button>
               </div>
 
-              <label className="muted" htmlFor="username">
-                Username
-              </label>
-              <input
-                id="username"
-                className="field"
-                autoComplete="username webauthn"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                placeholder="relay-user"
-              />
+              <div className="field-group">
+                <label htmlFor="username">Username</label>
+                <input
+                  id="username"
+                  className="field"
+                  autoComplete="username webauthn"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  placeholder="relay-user"
+                />
+              </div>
 
               {mode === "signup" ? (
-                <>
-                  <label className="muted" htmlFor="email">
-                    Email
-                  </label>
+                <div className="field-group">
+                  <label htmlFor="email">Email</label>
                   <input
                     id="email"
                     className="field"
@@ -261,21 +259,21 @@ export function SignIn({ onAuthed }: SignInProps) {
                     onChange={(event) => setEmail(event.target.value)}
                     placeholder="you@example.com"
                   />
-                </>
+                </div>
               ) : null}
 
-              <label className="muted" htmlFor="password">
-                Password
-              </label>
-              <input
-                id="password"
-                className="field"
-                type="password"
-                autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="At least 8 characters"
-              />
+              <div className="field-group">
+                <label htmlFor="password">Password</label>
+                <input
+                  id="password"
+                  className="field"
+                  type="password"
+                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="At least 8 characters"
+                />
+              </div>
 
               <button
                 className="primary-btn"
@@ -286,9 +284,7 @@ export function SignIn({ onAuthed }: SignInProps) {
                 {mode === "signup" ? "Create account" : "Sign in"}
               </button>
 
-              <p className="muted" style={{ textAlign: "center", margin: "4px 0" }}>
-                or continue with
-              </p>
+              <p className="muted auth-divider">or continue with</p>
               <button
                 className="ghost-btn"
                 type="button"

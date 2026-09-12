@@ -32,20 +32,29 @@ export function DangerSettings() {
       <p className="kicker">Danger zone</p>
       <h2 className="serif">Delete account</h2>
       <p className="muted">This permanently removes your Relay account and chat memberships.</p>
-      <div className="stack" style={{ marginTop: 20 }}>
-        <input
-          className="field"
-          type="password"
-          placeholder="Password (if you have one)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <input
-          className="field"
-          placeholder='Type DELETE'
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-        />
+      <div className="stack-form">
+        <div className="field-group">
+          <label htmlFor="delete-password">Password</label>
+          <input
+            id="delete-password"
+            className="field"
+            type="password"
+            autoComplete="current-password"
+            placeholder="Required if you have a password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+        <div className="field-group">
+          <label htmlFor="delete-confirm">Type DELETE to confirm</label>
+          <input
+            id="delete-confirm"
+            className="field"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            placeholder="DELETE"
+          />
+        </div>
         <button className="danger-btn" type="button" onClick={() => void deleteAccount()}>
           Delete my account
         </button>

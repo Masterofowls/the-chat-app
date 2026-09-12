@@ -1,5 +1,25 @@
 # Activity log
 
+## 2026-09-12 08:50 UTC+3
+
+- Mobile missing `/chat/:id` no longer hides the list; empty pane has Back to chats.
+- Public profiles: `GET /users/:id/profile` works without a session; signed-out visitors can open `/profile/:id`.
+- Reply stays visible on touch; @mentions open profiles; sidebar name/avatar refresh after save.
+- A11y: one Settings H1 on nested pages, composer focus ring, delete-account labels.
+- PWA/offline page uses Telegram tokens; Playwright coverage for missing chat + mentions.
+
+## 2026-09-12 08:33 UTC+3
+
+- Product+code audit of Relay (settings/profile/QR/layout/a11y/PWA/backend gaps/e2e snapshots).
+- Findings prioritized P0–P3; TODO item 5 (OAuth) is implemented and should be marked done.
+
+## 2026-09-12 08:20 UTC+3
+
+- Applied design-standards: spacing/type/radius/focus tokens, AA muted contrast, 44px controls.
+- Telegram settings nav: grouped sections, colored icon tiles, nowrap labels, shared `settings-nav.ts`.
+- Profile action chips, field groups, Telegram switches; skip link + reduced-motion.
+- Auth form rhythm and secondary button surfaces aligned with primary CTA hierarchy.
+
 ## 2026-09-07 16:40 UTC+3
 
 - Fixed profile QR: white card holds only the code; long share URL wraps in `.qr-url` with copy/open actions.

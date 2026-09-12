@@ -5,6 +5,7 @@ import type { UserProfile } from "../../../../shared/types";
 import { E2E_PEER, E2E_PROFILE, isE2eMode } from "../../lib/e2e-fixtures";
 import { apiUrl, authClient } from "../../lib/auth-client";
 import { useDocumentMeta } from "../../lib/seo";
+import { MessageCircle, QrCode, Share2 } from "lucide-react";
 import { ArrowLeftIcon } from "../icons/arrow-left";
 import { LogoutIcon } from "../icons/logout";
 import { Avatar } from "../ui/Avatar";
@@ -32,13 +33,14 @@ function seedSelfProfile(user: ChatOutletContext["user"]): UserProfile {
 export function ProfilePage({ self = false }: { self?: boolean }) {
   const params = useParams();
   const navigate = useNavigate();
-  const { user, onSignedOut, startDirect } = useOutletContext<ChatOutletContext>();
+  const ctx = useOutletContext<ChatOutletContext | undefined>();
+  const user = ctx?.user ?? null;
   const [profile, setProfile] = useState<UserProfile | null>(() =>
-    self ? seedSelfProfile(user) : null,
+    self && user ? seedSelfProfile(user) : null,
   );
   const [error, setError] = useState<string | null>(null);
-  const [name, setName] = useState(self ? user.name : "");
-  const [customStatus, setCustomStatus] = useState(self ? (user.customStatus ?? "") : "");
+  const [name, setName] = useState(self && user ? user.name : "");
+  const [customStatus, setCustomStatus] = useState(self && user ? (user.customStatus ?? "") : "");
   const [description, setDescription] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [showQr, setShowQr] = useState(false);
@@ -106,7 +108,7 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
     })();
   }, [userId, self]);
 
-  const isSelf = self || profile?.id === user.id;
+  const isSelf = Boolean(self || (user && profile?.id === user.id));
 
   async function saveProfile() {
     const response = await fetch(`${apiUrl}/me/profile`, {
@@ -126,6 +128,11 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
     const data = (await response.json()) as { profile: UserProfile };
     setProfile(data.profile);
     setMessage("Profile updated.");
+    ctx?.refreshUser({
+      name: data.profile.name,
+      image: data.profile.image,
+      customStatus: data.profile.customStatus,
+    });
     await authClient.getSession();
   }
 
@@ -160,7 +167,7 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
     setSigningOut(true);
     try {
       await authClient.signOut();
-      onSignedOut();
+      ctx?.onSignedOut();
       navigate("/", { replace: true });
     } catch {
       setError("Could not sign out");
@@ -173,9 +180,14 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
       <div className={`profile-page ${isSelf ? "self" : "guest"}`}>
         <div className="profile-card">
           <div className="profile-hero-stack">
-            <Avatar name={user.name} image={user.image} online size="xl" />
+            <Avatar
+              name={user?.name ?? "Profile"}
+              image={user?.image}
+              online
+              size="xl"
+            />
             <p className="kicker">Loading…</p>
-            <h1>{user.name}</h1>
+            <h1>{user?.name ?? "Profile"}</h1>
           </div>
         </div>
       </div>
@@ -186,7 +198,14 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
     return (
       <div className="profile-page">
         {!self ? (
-          <button className="ghost-btn back-btn" type="button" onClick={() => navigate(-1)}>
+          <button
+            className="ghost-btn back-btn"
+            type="button"
+            onClick={() => {
+              if (ctx) navigate(-1);
+              else navigate("/");
+            }}
+          >
             <ArrowLeftIcon size={18} />
             Back
           </button>
@@ -200,7 +219,14 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
     <div className={`profile-page ${isSelf ? "self" : "guest"}`}>
       {!self ? (
         <header className="profile-toolbar">
-          <button className="ghost-btn back-btn" type="button" onClick={() => navigate(-1)}>
+          <button
+            className="ghost-btn back-btn"
+            type="button"
+            onClick={() => {
+              if (ctx) navigate(-1);
+              else navigate("/");
+            }}
+          >
             <ArrowLeftIcon size={18} />
             Back
           </button>
@@ -226,29 +252,47 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
 
         {profile.description ? <p className="profile-bio">{profile.description}</p> : null}
 
-        <div className="row wrap profile-actions">
+        <div className="profile-actions" role="group" aria-label="Profile actions">
           {!isSelf ? (
             <button
-              className="primary-btn"
+              className="action-chip"
               type="button"
-              onClick={() =>
-                void startDirect({
-                  id: profile.id,
-                  name: profile.name,
-                  email: profile.email,
-                  image: profile.image,
-                  username: profile.username,
-                  isOnline: profile.isOnline,
-                })
-              }
+              onClick={() => {
+                if (ctx?.startDirect) {
+                  void ctx.startDirect({
+                    id: profile.id,
+                    name: profile.name,
+                    email: profile.email,
+                    image: profile.image,
+                    username: profile.username,
+                    isOnline: profile.isOnline,
+                  });
+                  return;
+                }
+                navigate("/");
+              }}
             >
-              Message
+              <span className="action-chip-icon" aria-hidden="true">
+                <MessageCircle size={20} />
+              </span>
+              {ctx?.startDirect ? "Message" : "Sign in to message"}
             </button>
           ) : null}
-          <button className="primary-btn" type="button" onClick={() => void shareProfile()}>
+          <button className="action-chip" type="button" onClick={() => void shareProfile()}>
+            <span className="action-chip-icon" aria-hidden="true">
+              <Share2 size={20} />
+            </span>
             Share
           </button>
-          <button className="ghost-btn" type="button" onClick={() => setShowQr((v) => !v)}>
+          <button
+            className="action-chip"
+            type="button"
+            aria-pressed={showQr}
+            onClick={() => setShowQr((v) => !v)}
+          >
+            <span className="action-chip-icon" aria-hidden="true">
+              <QrCode size={20} />
+            </span>
             {showQr ? "Hide QR" : "QR code"}
           </button>
         </div>
@@ -274,41 +318,44 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
       </div>
 
       {isSelf ? (
-        <div className="profile-card stack" style={{ marginTop: 16 }}>
+        <div className="profile-card stack-form">
           <h2>Edit profile</h2>
           <AvatarCropper
-            onSaved={(image) => setProfile((current) => (current ? { ...current, image } : current))}
+            onSaved={(image) => {
+              setProfile((current) => (current ? { ...current, image } : current));
+              ctx?.refreshUser({ image });
+            }}
           />
-          <label className="muted" htmlFor="profile-name">
-            Display name
-          </label>
-          <input
-            id="profile-name"
-            className="field"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <label className="muted" htmlFor="profile-status">
-            Custom status
-          </label>
-          <input
-            id="profile-status"
-            className="field"
-            value={customStatus}
-            onChange={(e) => setCustomStatus(e.target.value)}
-            maxLength={80}
-          />
-          <label className="muted" htmlFor="profile-bio">
-            Description
-          </label>
-          <textarea
-            id="profile-bio"
-            className="field"
-            rows={4}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            maxLength={500}
-          />
+          <div className="field-group">
+            <label htmlFor="profile-name">Display name</label>
+            <input
+              id="profile-name"
+              className="field"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <div className="field-group">
+            <label htmlFor="profile-status">Custom status</label>
+            <input
+              id="profile-status"
+              className="field"
+              value={customStatus}
+              onChange={(e) => setCustomStatus(e.target.value)}
+              maxLength={80}
+            />
+          </div>
+          <div className="field-group">
+            <label htmlFor="profile-bio">Description</label>
+            <textarea
+              id="profile-bio"
+              className="field"
+              rows={4}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              maxLength={500}
+            />
+          </div>
           <button className="primary-btn" type="button" onClick={() => void saveProfile()}>
             Save profile
           </button>
@@ -323,10 +370,11 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
           </button>
         </div>
       ) : (
-        <div className="profile-card" style={{ marginTop: 16 }}>
+        <div className="profile-card">
           <p className="muted">
-            This is a public Relay profile. Presence and device details respect their privacy
-            settings.
+            {ctx
+              ? "Presence and device details follow this person's privacy settings."
+              : "This profile is public. Sign in to Relay to start a chat."}
           </p>
         </div>
       )}
@@ -340,5 +388,5 @@ export function ProfilePage({ self = false }: { self?: boolean }) {
     return body;
   }
 
-  return <div className="profile-scroll">{body}</div>;
+  return <div className={`profile-scroll${ctx ? "" : " profile-public"}`}>{body}</div>;
 }

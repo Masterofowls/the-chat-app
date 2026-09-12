@@ -88,6 +88,24 @@ test.describe("Telegram interactions", () => {
     await expect(page.getByText("Alice")).toBeVisible();
   });
 
+  test("unknown chat is not a mobile trap", async ({ page }, testInfo) => {
+    await openE2e(page, "/chat/missing-conversation");
+    if (testInfo.project.name.startsWith("mobile")) {
+      await expect(page.locator(".sidebar")).toBeVisible();
+      await expect(page.getByText("Alice")).toBeVisible();
+    } else {
+      await expect(page.getByText(/this chat isn't available/i)).toBeVisible();
+      await expect(page.getByRole("button", { name: /back to chats/i })).toBeVisible();
+    }
+  });
+
+  test("mention opens a profile", async ({ page }) => {
+    await openE2e(page, "/chat/e2e-conversation");
+    await page.getByRole("button", { name: "@alice" }).click();
+    await expect(page).toHaveURL(/\/profile\/e2e-peer/);
+    await expect(page.getByRole("heading", { name: "Alice" })).toBeVisible();
+  });
+
   test("composer appends a message in e2e", async ({ page }) => {
     await openE2e(page, "/chat/e2e-conversation");
     await page.getByLabel("Message").fill("Playwright ping");

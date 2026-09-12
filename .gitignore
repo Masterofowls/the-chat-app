@@ -63,3 +63,5 @@ Thumbs.db
 /scripts/check-vercel-frontend.mjs
 /scripts/git-rollback.ps1
 /scripts/git-rollback.sh
+/.cursor/hooks/state/continual-learning-index.json
+/docs/ARCHITECTURE.md

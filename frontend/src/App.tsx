@@ -79,7 +79,12 @@ export function App() {
   }
 
   if (!user) {
-    return <SignIn onAuthed={() => void loadSession()} />;
+    return (
+      <Routes>
+        <Route path="profile/:userId" element={<ProfilePage />} />
+        <Route path="*" element={<SignIn onAuthed={() => void loadSession()} />} />
+      </Routes>
+    );
   }
 
   return (
@@ -90,6 +95,9 @@ export function App() {
             user={user}
             onSignedOut={() => {
               setUser(null);
+            }}
+            onUserUpdated={(patch) => {
+              setUser((current) => (current ? { ...current, ...patch } : current));
             }}
           />
         }

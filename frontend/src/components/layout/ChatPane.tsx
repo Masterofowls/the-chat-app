@@ -1,6 +1,7 @@
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import type { Conversation, PresencePayload, UserSummary } from "../../../../shared/types";
 import { ChatWindow } from "../ChatWindow";
+import { ArrowLeftIcon } from "../icons/arrow-left";
 import { MessageCircleIcon } from "../icons/message-circle";
 
 export type ChatOutletContext = {
@@ -11,6 +12,7 @@ export type ChatOutletContext = {
   refreshConversations: () => Promise<void>;
   onSignedOut: () => void;
   startDirect: (peer: UserSummary) => Promise<void>;
+  refreshUser: (patch: Partial<UserSummary>) => void;
 };
 
 export function ChatPane() {
@@ -27,8 +29,21 @@ export function ChatPane() {
   if (!selected || !peer) {
     return (
       <div className="empty-chat centered">
+        {conversationId ? (
+          <button
+            className="ghost-btn back-btn"
+            type="button"
+            aria-label="Back to chats"
+            onClick={() => navigate("/")}
+          >
+            <ArrowLeftIcon size={18} />
+            Back to chats
+          </button>
+        ) : null}
         <MessageCircleIcon size={40} className="brand-icon" />
-        <p className="muted">Select a chat to start messaging</p>
+        <p className="muted">
+          {conversationId ? "This chat isn't available" : "Select a chat to start messaging"}
+        </p>
       </div>
     );
   }
@@ -44,7 +59,7 @@ export function ChatPane() {
             lastActiveAt: lastActive,
             deviceInfo: peer.deviceInfo,
           }}
-          onOpenProfile={() => navigate(`/profile/${peer.id}`)}
+          onOpenProfile={(userId) => navigate(`/profile/${userId ?? peer.id}`)}
           onBack={() => navigate("/")}
         />
       </div>

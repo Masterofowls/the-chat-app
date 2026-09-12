@@ -34,6 +34,7 @@ export function Avatar({
     <span
       className={`avatar ${className}`}
       data-online={online == null ? "unknown" : String(Boolean(online))}
+      aria-hidden="true"
       style={{ width: px, height: px, fontSize: Math.round(px * 0.34) }}
     >
       {image ? <img src={image} alt="" /> : <span className="avatar-initials">{initials || "?"}</span>}

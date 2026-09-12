@@ -1,22 +1,7 @@
 import { NavLink, Outlet, useLocation, useNavigate, useOutletContext } from "react-router-dom";
+import { settingsNavGroups } from "../../lib/settings-nav";
 import type { ChatOutletContext } from "../layout/ChatPane";
 import { ArrowLeftIcon } from "../icons/arrow-left";
-import { LogoutIcon } from "../icons/logout";
-import { SettingsIcon } from "../icons/settings";
-import { UserIcon } from "../icons/user";
-import { WifiIcon } from "../icons/wifi";
-
-const links = [
-  { to: "/settings/profile", label: "My profile", icon: UserIcon },
-  { to: "/settings/passkeys", label: "Passkeys", icon: SettingsIcon },
-  { to: "/settings/accounts", label: "Connected accounts", icon: WifiIcon },
-  { to: "/settings/two-factor", label: "Two-factor", icon: SettingsIcon },
-  { to: "/settings/sessions", label: "Sessions", icon: WifiIcon },
-  { to: "/settings/privacy", label: "Privacy", icon: UserIcon },
-  { to: "/settings/password", label: "Password", icon: SettingsIcon },
-  { to: "/settings/telegram", label: "Telegram", icon: WifiIcon },
-  { to: "/settings/danger", label: "Delete account", icon: LogoutIcon },
-];
 
 export function SettingsLayout() {
   const navigate = useNavigate();
@@ -32,22 +17,29 @@ export function SettingsLayout() {
             <ArrowLeftIcon size={18} />
             Chats
           </button>
-          <h1>Settings</h1>
+          {isRoot ? <h1>Settings</h1> : <p className="settings-nav-title">Settings</p>}
         </header>
         <nav className="settings-links scroll-y">
-          {links.map((link) => {
-            const Icon = link.icon;
-            return (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                className={({ isActive }) => `settings-link${isActive ? " active" : ""}`}
-              >
-                <Icon size={18} />
-                <span>{link.label}</span>
-              </NavLink>
-            );
-          })}
+          {settingsNavGroups.map((group) => (
+            <div key={group.id} className="settings-group">
+              {group.label ? <p className="list-section-label">{group.label}</p> : null}
+              {group.items.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    className={({ isActive }) => `settings-link${isActive ? " active" : ""}`}
+                  >
+                    <span className="settings-link-icon" data-tone={link.tone} aria-hidden="true">
+                      <Icon size={16} strokeWidth={2.25} />
+                    </span>
+                    <span className="settings-link-label">{link.label}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
+          ))}
         </nav>
       </aside>
       <section className="settings-panel">

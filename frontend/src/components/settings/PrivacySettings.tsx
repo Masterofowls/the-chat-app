@@ -40,22 +40,28 @@ export function PrivacySettings() {
       <p className="kicker">Privacy</p>
       <h2 className="serif">Visibility</h2>
       <p className="muted">Control what other people can see on your profile and in chats.</p>
-      <div className="stack" style={{ marginTop: 20 }}>
+      <div className="stack-form">
         <label className="toggle-row">
           <span>Show last active time</span>
-          <input
-            type="checkbox"
-            checked={showLastActive}
-            onChange={(e) => setShowLastActive(e.target.checked)}
-          />
+          <span className="switch">
+            <input
+              type="checkbox"
+              checked={showLastActive}
+              onChange={(e) => setShowLastActive(e.target.checked)}
+            />
+            <span className="switch-ui" aria-hidden="true" />
+          </span>
         </label>
         <label className="toggle-row">
           <span>Show device info</span>
-          <input
-            type="checkbox"
-            checked={showDeviceInfo}
-            onChange={(e) => setShowDeviceInfo(e.target.checked)}
-          />
+          <span className="switch">
+            <input
+              type="checkbox"
+              checked={showDeviceInfo}
+              onChange={(e) => setShowDeviceInfo(e.target.checked)}
+            />
+            <span className="switch-ui" aria-hidden="true" />
+          </span>
         </label>
         <button className="primary-btn" type="button" onClick={() => void save()}>
           Save

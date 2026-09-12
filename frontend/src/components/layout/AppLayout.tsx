@@ -20,23 +20,24 @@ import type { Message } from "../../../../shared/types";
 type AppLayoutProps = {
   user: UserSummary;
   onSignedOut: () => void;
+  onUserUpdated: (patch: Partial<UserSummary>) => void;
 };
 
 function formatConversationTime(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-export function AppLayout({ user, onSignedOut }: AppLayoutProps) {
+export function AppLayout({ user, onSignedOut, onUserUpdated }: AppLayoutProps) {
   const params = useParams();
   return (
     <NotificationsProvider enabled activeConversationId={params.conversationId ?? null}>
-      <AppLayoutInner user={user} onSignedOut={onSignedOut} />
+      <AppLayoutInner user={user} onSignedOut={onSignedOut} onUserUpdated={onUserUpdated} />
       <NotificationToaster />
     </NotificationsProvider>
   );
 }
 
-function AppLayoutInner({ user, onSignedOut }: AppLayoutProps) {
+function AppLayoutInner({ user, onSignedOut, onUserUpdated }: AppLayoutProps) {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -55,7 +56,11 @@ function AppLayoutInner({ user, onSignedOut }: AppLayoutProps) {
     location.pathname.startsWith("/settings") ||
     location.pathname === "/me" ||
     location.pathname.startsWith("/profile/");
-  const mobileChat = Boolean(selectedId) || inSettings;
+  const knownChat =
+    !selectedId ||
+    booting ||
+    conversations.some((item) => item.id === selectedId);
+  const mobileChat = (Boolean(selectedId) && knownChat) || inSettings;
 
   useEffect(() => {
     if (isE2eMode()) {
@@ -173,6 +178,9 @@ function AppLayoutInner({ user, onSignedOut }: AppLayoutProps) {
       data-settings={String(inSettings)}
       data-mobile-chat={String(mobileChat)}
     >
+      <a className="skip-link" href="#main-content">
+        Skip to chats
+      </a>
       <aside className={`sidebar ${listOpen ? "open" : "collapsed"}`}>
         <header className="sidebar-head">
           <div className="brand-block">
@@ -303,7 +311,7 @@ function AppLayoutInner({ user, onSignedOut }: AppLayoutProps) {
         </footer>
       </aside>
 
-      <main className="main-pane">
+      <main id="main-content" className="main-pane">
         {!listOpen ? (
           <button
             className="floating-expand desktop-only"
@@ -324,6 +332,7 @@ function AppLayoutInner({ user, onSignedOut }: AppLayoutProps) {
             refreshConversations,
             onSignedOut,
             startDirect,
+            refreshUser: onUserUpdated,
           }}
         />
       </main>

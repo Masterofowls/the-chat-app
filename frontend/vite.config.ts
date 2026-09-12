@@ -16,8 +16,8 @@ export default defineConfig({
         name: "Relay",
         short_name: "Relay",
         description: "Realtime private messaging",
-        theme_color: "#14110e",
-        background_color: "#14110e",
+        theme_color: "#17212b",
+        background_color: "#0e1621",
         display: "standalone",
         start_url: "/",
         icons: [

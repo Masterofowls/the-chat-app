@@ -15,7 +15,7 @@ type ChatWindowProps = {
     lastActiveAt?: string | null;
     deviceInfo?: string | null;
   };
-  onOpenProfile?: () => void;
+  onOpenProfile?: (userId?: string) => void;
   onBack?: () => void;
 };
 
@@ -23,17 +23,40 @@ function formatBubbleTime(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-function renderBody(body: string) {
+function renderBody(
+  body: string,
+  people: UserSummary[],
+  onOpenProfile?: (userId?: string) => void,
+) {
   const parts = body.split(/(@[a-zA-Z0-9_]{2,32})/g);
-  return parts.map((part, index) =>
-    part.startsWith("@") ? (
+  return parts.map((part, index) => {
+    if (!part.startsWith("@")) {
+      return <span key={`${index}-${part.slice(0, 8)}`}>{part}</span>;
+    }
+    const handle = part.slice(1).toLowerCase();
+    const person = people.find((user) => {
+      const username = user.username?.toLowerCase() ?? "";
+      const compactName = user.name.replace(/\s+/g, "").toLowerCase();
+      return username === handle || compactName === handle;
+    });
+    if (person && onOpenProfile) {
+      return (
+        <button
+          key={`${part}-${index}`}
+          type="button"
+          className={styles.mention}
+          onClick={() => onOpenProfile(person.id)}
+        >
+          {part}
+        </button>
+      );
+    }
+    return (
       <span key={`${part}-${index}`} className={styles.mention}>
         {part}
       </span>
-    ) : (
-      <span key={`${index}-${part.slice(0, 8)}`}>{part}</span>
-    ),
-  );
+    );
+  });
 }
 
 export function ChatWindow({
@@ -140,7 +163,7 @@ export function ChatWindow({
             <ArrowLeftIcon size={20} />
           </button>
         ) : null}
-        <button type="button" className="chat-peer" onClick={onOpenProfile}>
+        <button type="button" className="chat-peer" onClick={() => onOpenProfile?.(peer.id)}>
           <Avatar
             name={peer.name}
             image={peer.image}
@@ -195,7 +218,9 @@ export function ChatWindow({
                   <span>{message.replyTo.body}</span>
                 </button>
               ) : null}
-              <p className={styles.body}>{renderBody(message.body)}</p>
+              <div className={styles.body}>
+                {renderBody(message.body, conversation.participants, onOpenProfile)}
+              </div>
               <footer className={styles.bubbleFoot}>
                 <button
                   type="button"

@@ -108,8 +108,9 @@
   box-shadow: none !important;
 }
 
-.input:focus {
-  box-shadow: none !important;
+.input:focus,
+.input:focus-visible {
+  box-shadow: var(--focus) !important;
 }
 
 .sendBtn {
@@ -191,19 +192,30 @@
   background: transparent;
   color: var(--muted);
   font-size: 0.68rem;
-  padding: 0 4px 0 0;
-  opacity: 0;
+  min-height: 28px;
+  padding: 4px 8px 0 0;
   cursor: pointer;
 }
 
-.bubble:hover .replyBtn,
-.bubble:focus-within .replyBtn {
-  opacity: 1;
+@media (hover: hover) and (pointer: fine) {
+  .replyBtn {
+    opacity: 0;
+  }
+
+  .bubble:hover .replyBtn,
+  .bubble:focus-within .replyBtn {
+    opacity: 1;
+  }
 }
 
 .mention {
   color: var(--accent);
   font-weight: 600;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
 }
 
 .replyBar {
@@ -315,6 +327,11 @@
   }
 }
 
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble { animation: none; }
+  .typingDots i { animation: none; }
+}
 
 @keyframes bubble-in {
   from {

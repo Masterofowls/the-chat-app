@@ -5,10 +5,29 @@ import type { UserProfile } from "../../../shared/types.js";
 import { db } from "../db/index.js";
 import { session, user } from "../db/schema.js";
 import { parseDeviceInfo } from "../lib/device.js";
-import { asAuthed, requireSession } from "../middleware/requireSession.js";
+import { asAuthed, requireSession, resolveSession } from "../middleware/requireSession.js";
 import { isUserOnline } from "../presence.js";
 
 export const profileRouter = Router();
+
+profileRouter.get("/users/:id/profile", async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    if (!userId) {
+      res.status(400).json({ error: "User id required" });
+      return;
+    }
+    const resolved = await resolveSession(req.headers);
+    const profile = await buildProfile(userId, resolved?.user.id === userId);
+    if (!profile) {
+      res.status(404).json({ error: "Profile not found" });
+      return;
+    }
+    res.json({ profile });
+  } catch (error) {
+    next(error);
+  }
+});
 
 profileRouter.use(requireSession);
 
@@ -71,25 +90,6 @@ profileRouter.patch("/me/profile", async (req, res, next) => {
       .where(eq(user.id, authed.user.id));
 
     const profile = await buildProfile(authed.user.id, true);
-    res.json({ profile });
-  } catch (error) {
-    next(error);
-  }
-});
-
-profileRouter.get("/users/:id/profile", async (req, res, next) => {
-  try {
-    const authed = asAuthed(req);
-    const userId = req.params.id;
-    if (!userId) {
-      res.status(400).json({ error: "User id required" });
-      return;
-    }
-    const profile = await buildProfile(userId, userId === authed.user.id);
-    if (!profile) {
-      res.status(404).json({ error: "Profile not found" });
-      return;
-    }
     res.json({ profile });
   } catch (error) {
     next(error);

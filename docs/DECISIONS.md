@@ -1,5 +1,13 @@
 # Decisions
 
+## 2026-09-12 — Public profile links
+
+QR/share URLs (`/profile/:id`) are viewable without signing in. `GET /users/:id/profile` is public and never returns another user's email. Presence still honors `showLastActive` / `showDeviceInfo`. Messaging still requires a session.
+
+## 2026-09-12 — Design tokens over ad-hoc CSS
+
+Relay keeps Telegram Web surfaces (`#0e1621` / `#17212b` / `#3390ec`) but all new UI uses semantic tokens (`--space-*`, `--text-*`, `--radius-*`, `--control-h`, `--focus`). Muted text is `#8ea3b5` / `#5a6168` so body copy meets WCAG AA. High-frequency chat chrome stays nearly motionless; settings/profile get hover feedback only.
+
 ## 2026-09-06 — Discord/Telegram shell + PWA
 
 UI follows a Discord-like cool palette and Telegram-like settings lists. Chat list stays beside the conversation on mobile (expandable/collapsible width). Connectivity title pings `/health` and shows `connecting…` when the API is down. Sign-out lives on the profile page only. Offline support uses `vite-plugin-pwa` (generateSW + autoUpdate). Animated icons are vendored from lucide-animated (motion) under `frontend/src/components/icons`.
